@@ -5,15 +5,7 @@ Deploy dats with a single endpoint.
 
 ### GET /
 
-A list of currently deployed dats.
-
-```
-{
-  "dats": [
-    "politicaltweets.dathub.berkeley.edu"
-  ]
-}
-```
+A list of currently deployed dats. 
 
 ### GET /:name
 

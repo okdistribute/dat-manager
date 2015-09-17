@@ -5,7 +5,7 @@ Deploy dats with a single endpoint.
 
 ### GET /
 
-A list of currently deployed dats. 
+A list of currently deployed dats.
 
 ### GET /:name
 
@@ -31,7 +31,7 @@ to the Dat using HTTP Basic Auth.
 #### Example
 
 ```
-POST http://dat-manager.berkeley.edu/politicaltweets
+POST http://dat-manager.berkeley.edu/politicaltweets?username=karissa
 ```
 
 Returns

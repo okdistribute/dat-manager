@@ -7,22 +7,6 @@ Deploy dats with a single endpoint.
 
 A list of currently deployed dats.
 
-### GET /:name
-
-Proxy to the dat url that was generated.
-
-#### Example
-
-```
-GET http://dat-manager.berkeley.edu/politicaltweets
-```
-
-Proxies to:
-
-```
-http://politicaltweets.dat-manager.berkeley.edu
-```
-
 ### POST /:name?username=<username>
 
 Creates a dat. Returns JSON, including a token that can be used to login

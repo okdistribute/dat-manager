@@ -84,10 +84,10 @@ npm link
 Edit config.json **or** set environment variables for `HOSTNAME` and `PORT`.
 
 ```
-dat-manager $ node cli.js --port=50001 --hostname=dat-manager.org
+$ dat-manager --port=50001 --hostname=dat-manager.org
 Listening on port 50001
 ^C
-dat-manager $ PORT=50002 node cli.js
+$ PORT=50002 dat-manager
 Listening on port 50002
 ```
 

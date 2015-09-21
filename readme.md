@@ -15,9 +15,9 @@ to the Dat using HTTP Basic Auth.
 #### Example
 
 ```
-curl http://dathub.org/politicaltweets
-  -H "Content-Type: application/json"
-  -X POST
+curl http://dathub.org/politicaltweets \
+  -H "Content-Type: application/json" \
+  -X POST \
   -d '{"user": "karissa", "name": "politicaltweets"}'   
 ```
 
@@ -26,7 +26,6 @@ Returns
 ```
 {
   "name": "politicaltweets",
-  "user": "karissa",
   "url": "http://politicaltweets.dathub.org",
   "token": "sbd2d4345sdfes"
 }
@@ -43,4 +42,4 @@ On error:
 
 ### DELETE /:name
 
-Delete a dat, removing all data and the redirect. It's gone. NADA!
+Delete a dat, removing all data. It's gone. NADA!

@@ -1,0 +1,15 @@
+DAT_DIR=/home/admin/dats
+LOG_DIR=/home/admin/logs
+
+NAME="$1"
+DAT_PATH=$DAT_DIR/$NAME
+LOG_PATH=$LOG_DIR/$NAME.log
+
+if [ -e $DAT_PATH ]; then
+  echo "Path already exists."
+  exit 1
+fi
+
+mkdir $DAT_PATH
+dat init --path=$DAT_PATH
+psy start -n $NAME --cwd=$DAT_DIR -l $LOG_PATH -- taco-nginx --name $NAME dat serve

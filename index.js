@@ -42,7 +42,7 @@ function createRouter () {
   })
 
   router.set('/:name', function (req, res, opts, cb) {
-    if (req.method === 'PUT')  return routes.get(req, res, opts, cb)
+    if (req.method === 'GET')  return routes.get(req, res, opts, cb)
     else if (req.method === 'POST')  return routes.create(req, res, opts, cb)
     else if (req.method === 'DELETE') return routes.remove(req, res, opts, cb)
     return res.end('Method not allowed.')

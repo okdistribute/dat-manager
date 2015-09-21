@@ -66,7 +66,11 @@ Returns `{deleted: true}` if successful.
 
 ## Installation
 
-Clone from github
+```
+npm install -g dat-manager
+```
+
+or, clone from github
 
 ```
 git clone https://github.com/karissa/dat-manager.git
@@ -77,7 +81,15 @@ npm link
 
 ## Deployment
 
-Edit config.json **or** set environment variables for hostname and port.
+Edit config.json **or** set environment variables for `HOSTNAME` and `PORT`.
+
+```
+dat-manager $ node cli.js --port=50001 --hostname=dat-manager.org
+Listening on port 50001
+^C
+dat-manager $ PORT=50002 node cli.js
+Listening on port 50002
+```
 
 The hostname is the domain where dats will be stored. The manager assumes you will be using subdomains for your deployed dats. For example, if you plan on hosting dats at `mydatname.website.org`, your `hostname` is `website.org`.
 

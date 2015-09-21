@@ -1,0 +1,8 @@
+DAT_DIR=/Users/karissa/dev/dats/dat-manager
+LOG_DIR=/Users/karissa/dev/dats/dat-manager/logs
+
+NAME="$1"
+DAT_PATH=$DAT_DIR/$NAME
+
+dat destroy --path=$DAT_PATH --no-prompt
+psy rm -n $NAME

@@ -1,7 +1,8 @@
 # dat-manager
 
-Deploy dats with a single endpoint.
+Create, remove, and list deployed dats with a single REST endpoint.
 
+## Built-in routes
 
 ### GET /
 
@@ -63,6 +64,25 @@ Delete a dat, removing all data. It's gone. NADA!
 
 Returns `{deleted: true}` if successful.
 
+## Installation
+
+Clone from github
+
+```
+git clone https://github.com/karissa/dat-manager.git
+cd dat manager
+npm install
+npm link
+```
+
+## Deployment
+
+Edit config.json **or** set environment variables for hostname and port.
+
+The hostname is the domain where dats will be stored. The manager assumes you will be using subdomains for your deployed dats. For example, if you plan on hosting dats at `mydatname.website.org`, your `hostname` is `website.org`.
+
+We recommend using [taco-nginx](http://github.com/mafintosh/taco-nginx) to deploy dats, and provide example scripts in scripts/initdat and scripts/rmdat. See the section on [Hosting a dat](http://datproject.readthedocs.org/en/latest/hosting/) for more information.
+
 ## TODO
 
-* Update example script and route.
+* Provide an 'update' example script and route at '/ PUT'.

@@ -1,4 +1,5 @@
 {
   "hostname": "dat-manager.org",
-  "port": null
+  "port": null,
+  "DB_PATH": null
 }

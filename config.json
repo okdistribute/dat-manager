@@ -1,3 +1,4 @@
 {
-  "host": "dathub.org"
+  "hostname": "dat-manager.org",
+  "port": undefined
 }

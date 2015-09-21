@@ -1,4 +1,6 @@
 var http = require('http')
+var url = require('url')
+var formatData = require('format-data')
 var jsonBody = require('body/json')
 var Router = require('http-hash-router')
 var pump = require('pump')
@@ -23,6 +25,7 @@ module.exports = function manager (opts) {
 
     function onError (err) {
       res.statusCode = err.statusCode || 500;
+      console.trace(err)
       res.end(err.message);
     }
   })
@@ -32,8 +35,8 @@ module.exports = function manager (opts) {
 
 function createDb (opts) {
   opts.DB_PATH = opts.DB_PATH || './data'
-  var db = level(opts.DB_PATH, { valueEncoding: 'json' })
-  db.dats = subdown(db, 'dats')
+  var db = level(opts.DB_PATH)
+  db.dats = subdown(db, 'dats', { valueEncoding: 'json'})
   return db
 }
 
@@ -47,7 +50,6 @@ function createRouter () {
 
   router.set('/:name', function (req, res, opts, cb) {
     if (req.method === 'PUT')  return get(req, res, opts, cb)
-    else if (req.method === 'PUT')  return update(req, res, opts, cb)
     else if (req.method === 'POST')  return create(req, res, opts, cb)
     else if (req.method === 'DELETE') return remove(req, res, opts, cb)
     return res.end('Method not allowed.')
@@ -65,29 +67,34 @@ function get (req, res, opts, cb) {
 }
 
 function all (req, res, opts, cb) {
-  pump(opts.db.dats.createReadStream(), ndjson.serialize(), res, function (err) {
+  var parsed = url.parse(req.url, true)
+  var query = parsed.query
+  if (!query.format) query.format = 'ndjson'
+  pump(opts.db.dats.createValueStream(), formatData(query.format), res, function (err) {
     if (err) return cb(err)
-  }
+  })
 }
 
 function create (req, res, opts, cb) {
   jsonBody(req, res, function (err, body) {
     if (err) return cb(err)
-    initDat(opts.db.dats, {user: body.user, name: body.name}, function (err, dat) {
+    var data = {
+      user: body.user,
+      hostname: opts.hostname,
+      name: opts.params.name
+    }
+    initDat(opts.db.dats, data, function (err, dat) {
       if (err) return cb(err)
       res.setHeader("content-type", "application/json")
-      return res.end(JSON.stringify(dat))
+      res.end(JSON.stringify(dat))
     })
   })
 }
 
 function remove (req, res, opts, cb) {
-  jsonBody(req, res, function (err, body) {
+  removeDat(opts.db.dats, {name: opts.params.name}, function (err) {
     if (err) return cb(err)
-    removeDat(opts.db.dats, opts.params.name, function (err) {
-      if (err) return cb(err)
-      res.setHeader("content-type", "application/json")
-      return res.end(JSON.stringify({deleted: true}))
-    })
+    res.setHeader("content-type", "application/json")
+    res.end(JSON.stringify({deleted: true}))
   })
 }

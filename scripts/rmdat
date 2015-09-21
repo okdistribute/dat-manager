@@ -5,4 +5,4 @@ NAME="$1"
 DAT_PATH=$DAT_DIR/$NAME
 
 dat destroy --path=$DAT_PATH --no-prompt
-psy rm -n $NAME
+psy rm $NAME

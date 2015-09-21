@@ -2,6 +2,7 @@
 var args = require('minimist')(process.argv.slice(2))
 var path = require('path')
 var getport = require('getport')
+var fs = require('fs')
 var manager = require('./')
 
 var configPath = args.config || path.join(__dirname, 'config.json')

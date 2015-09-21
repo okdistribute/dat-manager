@@ -11,4 +11,5 @@ if [ \! -e $DAT_PATH ]; then
 fi
 
 dat init --path=$DAT_PATH --no-prompt
-psy start -n $NAME --cwd=$DAT_DIR -l $LOG_PATH -- taco-nginx --name $NAME dat serve
+psy start -n $NAME --cwd=$DAT_PATH -l $LOG_PATH -- dat serve
+# psy start -n $NAME --cwd=$DAT_PATH-l $LOG_PATH -- taco-nginx --name $NAME dat serve 

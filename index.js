@@ -43,7 +43,7 @@ function createRouter () {
 
     jsonBody(req, res, function (err, body) {
       if (err) return cb(err)
-      createDat(opts.db.dats, {name: body.name}, function (err, dat) {
+      createDat(opts.db.dats, {user: body.user, name: body.name}, function (err, dat) {
         if (err) return cb(err)
         res.setHeader("content-type", "application/json")
         return res.end(JSON.stringify(body))

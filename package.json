@@ -27,6 +27,7 @@
     "getport": "^0.1.0",
     "level": "^1.3.0",
     "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
     "ndjson": "^1.4.2",
     "subleveldown": "^2.0.0"
   }

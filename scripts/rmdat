@@ -1,8 +1,0 @@
-DAT_DIR=/home/admin/dat-manager/dats
-LOG_DIR=/home/admin/dat-manager/logs
-
-NAME="$1"
-DAT_PATH=$DAT_DIR/$NAME
-
-psy rm $NAME
-dat destroy --path=$DAT_PATH --no-prompt

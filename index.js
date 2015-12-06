@@ -1,4 +1,5 @@
 var http = require('http')
+var mkdirp = require('mkdirp')
 var Router = require('http-hash-router')
 var level = require('level')
 var subdown = require('subleveldown')
@@ -17,19 +18,19 @@ module.exports = function manager (opts) {
     }
 
     function onError (err) {
-      res.statusCode = err.statusCode || 500;
+      res.statusCode = err.statusCode || 500
       console.trace(err)
-      res.end(err.message);
+      res.end(err.message)
     }
   })
   return server
 }
 
-
 function createDb (opts) {
   opts.DB_PATH = opts.DB_PATH || './data'
+  mkdirp.sync(opts.DB_PATH)
   var db = level(opts.DB_PATH)
-  db.dats = subdown(db, 'dats', { valueEncoding: 'json'})
+  db.dats = subdown(db, 'dats', {valueEncoding: 'json'})
   return db
 }
 
@@ -42,8 +43,8 @@ function createRouter () {
   })
 
   router.set('/:name', function (req, res, opts, cb) {
-    if (req.method === 'GET')  return routes.get(req, res, opts, cb)
-    else if (req.method === 'POST')  return routes.create(req, res, opts, cb)
+    if (req.method === 'GET') return routes.get(req, res, opts, cb)
+    else if (req.method === 'POST') return routes.create(req, res, opts, cb)
     else if (req.method === 'DELETE') return routes.remove(req, res, opts, cb)
     return res.end('Method not allowed.')
   })

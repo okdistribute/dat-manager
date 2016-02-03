@@ -59,30 +59,6 @@ function restart (dat, cb) {
   })
 }
 
-function start (dat, cb) {
-  if (RUNNING[dat.path]) return restart(dat, cb)
-  config.read()
-  dat.state = 'loading'
-  config.update(dat)
-  debug('starting', dat)
-  var db = Dat()
-  if (dat.link) return db.download(dat.link, dat.path, done)
-  db.addFiles(dat.path, function (err, link) {
-    if (err) return cb(err)
-    db.joinTcpSwarm(link, done)
-  })
-
-  function done (err, swarm) {
-    debug('done', arguments)
-    if (err) return cb(err)
-    RUNNING[dat.path] = swarm.close
-    dat.state = 'active'
-    dat.link = swarm.link
-    dat.date = Date.now()
-    config.update(dat)
-    if (cb) cb(null, dat)
-  }
-}
 
 function stop (dat, cb) {
   config.read()

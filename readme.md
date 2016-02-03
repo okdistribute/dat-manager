@@ -1,10 +1,23 @@
 # dat-manager
 
-Create, remove, and list deployed dats with a single REST endpoint.
+Create, remove, and list deployed dats with http.
 
 ## Built-in routes
 
-### GET /
+On error:
+```
+{ "error": true, "message": "the error message goes here.."}
+```
+
+### Main screen
+
+GET `/`
+
+Frontend index.html. Lists the currently hosted dats, with stop/start button. Can add a new dat.
+
+### List dats
+
+GET `/dats`
 
 A list of currently deployed dats in JSON format.
 
@@ -12,57 +25,53 @@ Options
 
 - `format`: supply ?format=<ndjson,json,csv> to format the return.
 
-### POST /:name
+###  Get info for a given dat.
 
-Creates a dat with the given name. Returns JSON, including a token that can be used to login
-to the Dat using HTTP Basic Auth.
-
-Example:
-
-```
-curl http://dathub.org/politicaltweets \
-  -H "Content-Type: application/json" \
-  -X POST \
-  -d '{"user": "karissa"}
-```
-
-Returns
-
-```
-{
-  "name": "politicaltweets",
-  "url": "http://politicaltweets.dathub.org",
-  "token": "sbd2d4345sdfes"
-}
-```
-
-On error:
-```
-{ "error": true, "message": "the error message goes here.."}
-```
-
-Options:
-
-- `name`: The name of the new dat.
-- `user`: The username allowing access to the new dat.
-
-### GET /:name
-
-Get info for a given dat.
+GET `/dats/:name`
 
 Returns:
 ```
 {
   "name": "politicaltweets",
-  "url": "http://politicaltweets.dathub.org",
+  "link": "dat://thisisalink",
 }
 ```
 
-### DELETE /:name
+## Authenticated methods:
+
+Don't worry about it now but at some point we need authentication.
+
+Maybe just http basic auth.
+
+### Start a dat
+
+GET `/dats/:name/start`
+
+Example:
+
+```
+curl http://dats.berkeley.edu/dats/mydat/start?link=thisisadathash
+```
+
+Could return download progress. (not that important)
+
+```
+{ "progress": 30 }
+{ "progress": 100 }
+{ "progress": 403 }
+```
+
+### Stop a dat
+
+GET `/dats/:name/stop`
+
+### Delete a dat
+
+DELETE `/dats/:name`
 
 Delete a dat, removing all data. It's gone. NADA!
 
-Returns `{deleted: true}` if successful.
+Returns `{ deleted: true }` if successful.
 
 ## Installation
 
@@ -94,7 +103,3 @@ Listening on port 50002
 The hostname is the domain where dats will be stored. The manager assumes you will be using subdomains for your deployed dats. For example, if you plan on hosting dats at `mydatname.website.org`, your `hostname` is `website.org`.
 
 We recommend using [taco-nginx](http://github.com/mafintosh/taco-nginx) to deploy dats, and provide example scripts in scripts/initdat and scripts/rmdat. See the section on [Hosting a dat](http://datproject.readthedocs.org/en/latest/hosting/) for more information.
-
-## TODO
-
-* Provide an 'update' example script and route at '/ PUT'.

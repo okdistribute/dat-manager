@@ -21,6 +21,7 @@ test('manager start and stop', function (t) {
         t.ifError(err)
         //rimraf.sync(location)
         manager.close(function () {
+          t.same(manager.running, {mydat: undefined})
           t.end()
         })
       })

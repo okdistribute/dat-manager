@@ -1,6 +1,6 @@
+var log = require('why-is-node-running')
 var Manager = require('../')
 var Dat = require('dat')
-var rimraf = require('rimraf')
 var path = require('path')
 var memdb = require('memdb')
 var test = require('tape')
@@ -17,11 +17,12 @@ test('manager start and stop', function (t) {
     t.ifError(err)
     manager.start('mydat', link, function (err) {
       t.ifError(err)
+      t.same(typeof manager.swarms.mydat, 'object')
       manager.stop('mydat', function (err) {
         t.ifError(err)
-        //rimraf.sync(location)
+        t.same(manager.swarms.mydat, undefined)
         manager.close(function () {
-          t.same(manager.running, {mydat: undefined})
+          log()
           t.end()
         })
       })

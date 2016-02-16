@@ -12,7 +12,7 @@ function Manager (opts) {
   if (!opts) opts = {}
   this.db = opts.db || createDb(opts)
   this.location = opts.location || path.join(process.cwd(), 'dats')
-  this.running = {}
+  this.swarms = {}
 }
 
 Manager.prototype.get = function (name, cb) {
@@ -23,27 +23,25 @@ Manager.prototype.get = function (name, cb) {
 Manager.prototype.stop = function (name, cb) {
   var self = this
   if (!name) return cb(new Error('Name required'))
-  var dat = this.running[name]
-  if (!dat) return cb(new Error('No dat running with that name'))
-  if (dat.close) dat.close(done)
-  else done()
-
-  function done (err) {
+  var swarm = this.swarms[name]
+  if (!swarm) return cb(new Error('No dat running with that name'))
+  swarm.destroy()
+  this.swarms[name] = undefined
+  self.db.get(name, function (err, dat) {
     if (err) return cb(err)
     dat.state = 'inactive'
-    self.running[name] = undefined
     self.db.put(name, dat, function (err) {
       if (err) return cb(err)
       cb(null, dat)
     })
-  }
+  })
 }
 
 Manager.prototype.start = function (name, link, cb) {
   var self = this
   if (!name) return cb(new Error('Name required'))
   if (!link) return cb(new Error('Link required'))
-  if (self.running[name]) return cb(new Error('Name taken'))
+  if (self.swarms[name]) return cb(new Error('Name taken'))
   var db = Dat()
   debug('downloading', link)
   var dat = {
@@ -56,10 +54,9 @@ Manager.prototype.start = function (name, link, cb) {
   function done (err, swarm) {
     if (err) return cb(err)
     debug('done downloading')
-    dat.close = swarm.close
     dat.state = 'active'
     dat.date = Date.now()
-    self.running[name] = dat
+    self.swarms[name] = swarm
     self.db.put(name, dat, function (err) {
       if (err) return cb(err)
       return cb(null, dat)
@@ -75,7 +72,10 @@ Manager.prototype.delete = function (name, cb) {
   var self = this
   self.db.del(name, function (err) {
     if (err) return cb(err)
-    self.running[name] = undefined
+    var swarm = self.swarms[name]
+    swarm.destroy()
+    self.swarms[name] = undefined
+    cb()
   })
 }
 
@@ -91,6 +91,7 @@ Manager.prototype.close = function (cb) {
   stream.on('end', function () {
     parallel(funcs, function (err) {
       if (err) return cb(err)
+      self.db.close()
       return cb()
     })
   })

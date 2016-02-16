@@ -23,6 +23,7 @@ test('manager start and stop', function (t) {
         t.same(manager.swarms.mydat, undefined)
         manager.close(function () {
           log()
+          db.close()
           t.end()
         })
       })

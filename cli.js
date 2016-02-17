@@ -1,33 +1,9 @@
 #!/usr/bin/env node
 var args = require('minimist')(process.argv.slice(2))
-var getport = require('getport')
-var http = require('http')
+var server = require('./server.js')
 
-var router = require('./router.js')
+var port = 8080 || process.env.PORT
 
-if (process.env.PORT && !args.port) args.port = process.env.PORT
-if (args.port) return listen (args.port, config)
-getport(5000, function (err, port) {
-  if (err) throw err
-  listen(port, config)
+server.listen(port, function () {
+  console.log('port', port)
 })
-
-function listen (port) {
-  var server = http.createServer(function (req, res) {
-    try {
-      router(req, res, opts, onError)
-    } catch (err) {
-      onError(err)
-    }
-
-    function onError (err) {
-      res.statusCode = err.statusCode || 500
-      console.trace(err)
-      res.end(err.message)
-    }
-  })
-  server.listen(port, function (err) {
-    if (err) throw err
-    console.log('Listening on port', port)
-  })
-}

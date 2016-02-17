@@ -21,6 +21,7 @@
   "homepage": "https://github.com/karissa/dat-manager#readme",
   "dependencies": {
     "body": "^5.1.0",
+    "collect-stream": "^1.1.1",
     "debug": "^2.2.0",
     "execspawn": "^0.2.1",
     "format-data": "^2.1.2",

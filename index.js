@@ -1,4 +1,5 @@
 var mkdirp = require('mkdirp')
+var collect = require('collect-stream')
 var level = require('level')
 var parallel = require('run-parallel')
 var debug = require('debug')('dat-manager')
@@ -79,6 +80,10 @@ Manager.prototype.delete = function (name, cb) {
   })
 }
 
+Manager.prototype.list = function (cb) {
+  collect(this.createValueStream(), cb)
+}
+
 Manager.prototype.close = function (cb) {
   var self = this
   var stream = self.db.createKeyStream()
@@ -100,5 +105,5 @@ Manager.prototype.close = function (cb) {
 function createDb (opts) {
   opts.DB_PATH = opts.DB_PATH || './data'
   mkdirp.sync(opts.DB_PATH)
-  return level(opts.DB_PATH)
+  return level(opts.DB_PATH, { valueEncoding: 'json' })
 }

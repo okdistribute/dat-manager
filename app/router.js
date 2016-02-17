@@ -1,5 +1,7 @@
 var Router = require('http-hash-router')
-var Manager = require('./')
+var fs = require('fs')
+var path = require('path')
+var Manager = require('../')
 var url = require('url')
 
 module.exports = createRouter
@@ -9,10 +11,14 @@ function createRouter () {
   var manager = Manager()
 
   router.set('/', function (req, res, opts, cb) {
+    res.end(fs.readFileSync(path.join(__dirname, 'index.html')).toString())
+  })
+
+  router.set('/dats', function (req, res, opts, cb) {
     if (req.method === 'GET') {
       manager.list(function (err, dats) {
         if (err) return cb(err)
-        res.end({'dats': dats})
+        res.end(JSON.stringify({'dats': dats}))
       })
     }
     else res.end('Method not allowed.')

@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node cli.js"
+    "start": "npm run watch & node cli.js",
+    "watch": "watchify -t [ babelify --presets [ react ] ] app/frontend.js -o app/bundle.js",
+    "build": "browserify -t [ babelify --presets [ react ] ] app/frontend.js -o app/bundle.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,8 @@
   },
   "homepage": "https://github.com/karissa/dat-manager#readme",
   "dependencies": {
+    "babel-preset-react": "^6.5.0",
+    "babelify": "^7.2.0",
     "body": "^5.1.0",
     "collect-stream": "^1.1.1",
     "debug": "^2.2.0",
@@ -31,7 +35,11 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "ndjson": "^1.4.2",
-    "subleveldown": "^2.0.0"
+    "nets": "^3.2.0",
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
+    "subleveldown": "^2.0.0",
+    "watchify": "^3.7.0"
   },
   "devDependencies": {
     "rimraf": "^2.5.1",

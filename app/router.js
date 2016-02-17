@@ -10,6 +10,10 @@ function createRouter () {
   var router = Router()
   var manager = Manager()
 
+  router.set('/bundle.js', function (req, res, opts, cb) {
+    res.end(fs.readFileSync(path.join(__dirname, 'bundle.js')).toString())
+  })
+
   router.set('/', function (req, res, opts, cb) {
     res.end(fs.readFileSync(path.join(__dirname, 'index.html')).toString())
   })
@@ -33,9 +37,10 @@ function createRouter () {
 
   router.set('/dats/:name/start', function (req, res, opts, cb) {
     var name = opts.params.name
-    var link = url.parse(req.url, true).query
-    manager.start(name, link, function (err) {
+    var link = url.parse(req.url, true).query.link
+    manager.start(name, link, function (err, data) {
       if (err) return cb(err)
+      res.end(JSON.stringify(data))
     })
     if (req.method !== 'GET') return cb(new Error('Method not allowed.'))
   })

@@ -1,6 +1,6 @@
 # dat-manager
 
-Create, remove, and list deployed dats with http. about 50% vaporware
+Create, remove, and list deployed dats with http. 
 
 ## TODO:
 - [ ] finish frontend
@@ -88,21 +88,14 @@ or, clone from github
 git clone https://github.com/karissa/dat-manager.git
 cd dat manager
 npm install
-npm link
+npm start
 ```
 
 ## Deployment
 
-Edit config.json **or** set environment variables for `HOSTNAME` and `PORT`.
+You can set environment variable for `PORT`.
 
 ```
-$ dat-manager --port=50001 --hostname=dat-manager.org
-Listening on port 50001
-^C
 $ PORT=50002 dat-manager
 Listening on port 50002
 ```
-
-The hostname is the domain where dats will be stored. The manager assumes you will be using subdomains for your deployed dats. For example, if you plan on hosting dats at `mydatname.website.org`, your `hostname` is `website.org`.
-
-We recommend using [taco-nginx](http://github.com/mafintosh/taco-nginx) to deploy dats, and provide example scripts in scripts/initdat and scripts/rmdat. See the section on [Hosting a dat](http://datproject.readthedocs.org/en/latest/hosting/) for more information.

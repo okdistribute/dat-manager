@@ -3,8 +3,7 @@
 Create, remove, and list deployed dats with http. about 50% vaporware
 
 ## TODO:
-- [ ] stop, remove, etc
-- [ ] persist dat statuses to the fs somehow (right now in memory)
+- [ ] finish frontend
 
 ## Built-in routes
 

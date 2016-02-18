@@ -45,9 +45,6 @@ Manager.prototype.stop = function (name, cb) {
 Manager.prototype.start = function (name, opts, cb) {
   var self = this
   if (!name) return cb(new Error('Name required'))
-  var dat = {
-    name: name
-  }
   if (opts.link) return download(opts.link)
 
   self.db.get(name, function (err, dat) {
@@ -55,24 +52,25 @@ Manager.prototype.start = function (name, opts, cb) {
     download(dat.link)
   })
 
-  function download (hash) {
+  function download (link) {
     var db = Dat()
-    debug('downloading', hash)
-    dat.link = hash
-    dat.path = path.join(self.location, hash)
-    db.download(hash, dat.path, done)
-  }
-
-  function done (err, swarm) {
-    if (err) return cb(err)
-    debug('done downloading')
-    dat.state = 'active'
-    dat.link = swarm.link
-    dat.date = Date.now()
-    self.swarms[name] = swarm
-    self.db.put(name, dat, function (err) {
+    debug('downloading', link, 'to', location)
+    var location = path.join(self.location, link)
+    db.download(link, location, function (err, swarm) {
       if (err) return cb(err)
-      return cb(null, dat)
+      debug('done downloading')
+      var dat = {
+        state: 'active',
+        link: link,
+        date: Date.now(),
+        location: location,
+        name: name
+      }
+      self.swarms[name] = swarm
+      self.db.put(name, dat, function (err) {
+        if (err) return cb(err)
+        return cb(null, dat)
+      })
     })
   }
 }
@@ -96,7 +94,7 @@ Manager.prototype.list = function (cb) {
   collect(this.createValueStream(), cb)
 }
 
-Manager.prototype.close = function (f, cb) {
+Manager.prototype.close = function (cb) {
   var self = this
   var stream = self.db.createKeyStream()
   var funcs = []

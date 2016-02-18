@@ -7,7 +7,7 @@
     "dat-manager": "cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node tests/test.js",
     "start": "npm run watch & node cli.js",
     "watch": "watchify -t [ babelify --presets [ react ] ] app/frontend.js -o app/bundle.js",
     "build": "browserify -t [ babelify --presets [ react ] ] app/frontend.js -o app/bundle.js"

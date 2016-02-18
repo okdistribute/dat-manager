@@ -1,5 +1,6 @@
 var mkdirp = require('mkdirp')
 var collect = require('collect-stream')
+var through = require('through2')
 var level = require('level')
 var parallel = require('run-parallel')
 var debug = require('debug')('dat-manager')
@@ -12,8 +13,11 @@ function Manager (opts) {
   if (!(this instanceof Manager)) return new Manager(opts)
   if (!opts) opts = {}
   this.db = opts.db || createDb(opts)
-  this.location = opts.location || path.join(process.cwd(), 'dats')
+  this.location = opts.location || path.resolve('dats')
   this.swarms = {}
+  this.init(function (err) {
+    if (err) throw err
+  })
 }
 
 Manager.prototype.get = function (name, cb) {
@@ -38,24 +42,32 @@ Manager.prototype.stop = function (name, cb) {
   })
 }
 
-Manager.prototype.start = function (name, link, cb) {
+Manager.prototype.start = function (name, opts, cb) {
   var self = this
   if (!name) return cb(new Error('Name required'))
-  if (!link) return cb(new Error('Link required'))
-  if (self.swarms[name]) return cb(new Error('Name taken'))
-  var db = Dat()
-  debug('downloading', link)
   var dat = {
-    name: name,
-    link: link,
-    path: path.join(self.location, link)
+    name: name
   }
-  db.download(link, dat.path, done)
+  if (opts.link) return download(opts.link)
+
+  self.db.get(name, function (err, dat) {
+    if (err) return cb(err)
+    download(dat.link)
+  })
+
+  function download (hash) {
+    var db = Dat()
+    debug('downloading', hash)
+    dat.link = hash
+    dat.path = path.join(self.location, hash)
+    db.download(hash, dat.path, done)
+  }
 
   function done (err, swarm) {
     if (err) return cb(err)
     debug('done downloading')
     dat.state = 'active'
+    dat.link = swarm.link
     dat.date = Date.now()
     self.swarms[name] = swarm
     self.db.put(name, dat, function (err) {
@@ -84,7 +96,7 @@ Manager.prototype.list = function (cb) {
   collect(this.createValueStream(), cb)
 }
 
-Manager.prototype.close = function (cb) {
+Manager.prototype.close = function (f, cb) {
   var self = this
   var stream = self.db.createKeyStream()
   var funcs = []
@@ -97,6 +109,26 @@ Manager.prototype.close = function (cb) {
     parallel(funcs, function (err) {
       if (err) return cb(err)
       self.db.close()
+      return cb()
+    })
+  })
+}
+
+Manager.prototype.init = function (cb) {
+  var self = this
+  var stream = self.db.createValueStream()
+  var funcs = []
+
+  stream.on('data', function (dat) {
+    funcs.push(function (done) {
+      if (dat.state === 'active') self.start(dat.name, {link: dat.link}, done)
+      else done()
+    })
+  })
+
+  stream.on('end', function () {
+    parallel(funcs, function (err) {
+      if (err) return cb(err)
       return cb()
     })
   })

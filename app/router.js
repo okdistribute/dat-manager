@@ -36,16 +36,21 @@ function createRouter () {
   })
 
   router.set('/dats/:name/start', function (req, res, opts, cb) {
+    if (req.method !== 'GET') return cb(new Error('Method not allowed.'))
     var name = opts.params.name
     var link = url.parse(req.url, true).query.link
-    manager.start(name, link, function (err, data) {
+    manager.start(name, {link: link}, function (err, data) {
       if (err) return cb(err)
       res.end(JSON.stringify(data))
     })
-    if (req.method !== 'GET') return cb(new Error('Method not allowed.'))
   })
+
   router.set('/dats/:name/stop', function (req, res, opts, cb) {
     if (req.method !== 'GET') return cb(new Error('Method not allowed.'))
+    manager.stop(opts.params.name, function (err, data) {
+      if (err) return cb(err)
+      res.end(JSON.stringify(data))
+    })
   })
 
   return router

@@ -14,7 +14,7 @@ test('manager start and stop', function (t) {
   var db = Dat()
   db.addFiles(path.join(__dirname, 'fixtures'), function (err, link) {
     t.ifError(err)
-    manager.start('mydat', link, function (err) {
+    manager.start('mydat', {link: link}, function (err) {
       t.ifError(err)
       t.same(typeof manager.swarms.mydat, 'object')
       manager.stop('mydat', function (err) {

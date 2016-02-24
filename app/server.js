@@ -7,9 +7,8 @@ module.exports = http.createServer(function (req, res) {
 
   function onError (err) {
     if (err) {
-      // use your own custom error serialization.
       res.statusCode = err.statusCode || 500
-      res.end(err.message)
+      res.end(JSON.stringify({error: true, message: err.message, statusCode: res.statusCode}))
     }
   }
 })

@@ -1,4 +1,4 @@
-var request = require('nets')
+var xhr = require('./request')
 var list = require('./components/list')
 
 var $name = document.getElementById('name')
@@ -13,15 +13,8 @@ function submit (event) {
     uri: '/dats/' + $name.value + '/start?link=' + $link.value,
     json: true
   }
-  request(opts, function (err, resp, json) {
-    if (err) throw err
+  xhr(opts, function (resp, json) {
     dats.push(json)
     list(dats)
   })
 }
-
-request({uri: '/dats', json: true}, function (err, resp, json) {
-  if (err) throw err
-  dats = json.dats
-  list(dats)
-})

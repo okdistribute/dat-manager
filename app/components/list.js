@@ -1,7 +1,9 @@
 var React = require('react')
-var nets = require('nets')
 var ReactDOM = require('react-dom')
 var EditInPlace = require('react-editinplace')
+
+var xhr = require('../request.js')
+var error = require('./error.js')
 
 var StopButton = React.createClass({
   getInitialState: function () {
@@ -15,8 +17,7 @@ var StopButton = React.createClass({
       uri: '/dats/' + name + '/stop',
       json: true
     }
-    nets(opts, function (err, resp, data) {
-      if (err) throw err
+    xhr(opts, function (resp, data) {
       self.setState({loading: false})
       self.props.list.toggle()
     })
@@ -43,8 +44,7 @@ var StartButton = React.createClass({
       uri: '/dats/' + name + '/start',
       json: true
     }
-    nets(opts, function (err, resp, data) {
-      if (err) throw err
+    xhr(opts, function (resp, data) {
       self.setState({loading: false})
       self.props.list.toggle()
     })
@@ -59,7 +59,7 @@ var StartButton = React.createClass({
   }
 })
 
-var DatName = React.createClass({
+var NameLabel = React.createClass({
   getInitialState: function () {
     return {
       name: this.props.name
@@ -74,8 +74,7 @@ var DatName = React.createClass({
         name: text
       }
     }
-    nets(opts, function (err, resp, json) {
-      if (err) throw err
+    xhr(opts, function (resp, json) {
       self.setState({name: text})
     })
   },
@@ -99,6 +98,17 @@ var ListItem = React.createClass({
       running: this.props.dat.value.state === 'active'
     }
   },
+  delete: function () {
+    var self = this
+    var opts = {
+      uri: '/dats/' + this.props.dat.key,
+      method: 'DELETE',
+      json: true
+    }
+    xhr(opts, function (resp, json) {
+      render()
+    })
+  },
   toggle: function () {
     this.setState(function (prev) {
       return {running: !prev.running}
@@ -109,8 +119,9 @@ var ListItem = React.createClass({
       <div className='section list-item' onClick={this.handleClick}>
         <div className="divider"></div>
         <div className="row">
+          <a onClick={this.delete}>x</a>
           { this.state.running ? <StopButton list={this} /> : <StartButton list={this}/> }
-          <DatName name={this.props.dat.key} />
+          <NameLabel name={this.props.dat.key} />
           <p> { this.props.dat.value.link } </p>
         </div>
       </div>
@@ -131,6 +142,13 @@ var List = React.createClass({
 })
 
 module.exports = function render (dats) {
+  if (dats) return _render(dats)
+  xhr({uri: '/dats', json: true}, function (resp, json) {
+    _render(json.dats)
+  })
+}
+
+function _render (dats) {
   ReactDOM.render(
     <List dats={dats} />,
     document.getElementById('app')

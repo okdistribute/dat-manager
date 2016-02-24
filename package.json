@@ -9,8 +9,8 @@
   "scripts": {
     "test": "node tests/test.js",
     "start": "npm run watch & node cli.js",
-    "watch": "watchify -t [ babelify --presets [ react ] ] app/frontend.js -o app/bundle.js",
-    "build": "browserify -t [ babelify --presets [ react ] ] app/frontend.js -o app/bundle.js"
+    "watch": "watchify -t [ babelify --presets [ react ] ] app/frontend.js -o app/static/bundle.js",
+    "build": "browserify -t [ babelify --presets [ react ] ] app/frontend.js -o app/static/bundle.js"
   },
   "repository": {
     "type": "git",

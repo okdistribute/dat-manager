@@ -1,6 +1,5 @@
 var mkdirp = require('mkdirp')
 var collect = require('collect-stream')
-var through = require('through2')
 var level = require('level')
 var parallel = require('run-parallel')
 var debug = require('debug')('dat-manager')
@@ -30,6 +29,7 @@ Manager.prototype.stop = function (name, cb) {
   if (!name) return cb(new Error('Name required'))
   var swarm = this.swarms[name]
   if (!swarm) return cb(new Error('No dat running with that name'))
+  debug('stopping', name)
   swarm.destroy()
   this.swarms[name] = undefined
   self.db.get(name, function (err, dat) {
@@ -37,6 +37,7 @@ Manager.prototype.stop = function (name, cb) {
     dat.state = 'inactive'
     self.db.put(name, dat, function (err) {
       if (err) return cb(err)
+      debug('done', dat)
       cb(null, dat)
     })
   })
@@ -45,17 +46,17 @@ Manager.prototype.stop = function (name, cb) {
 Manager.prototype.start = function (name, opts, cb) {
   var self = this
   if (!name) return cb(new Error('Name required'))
-  if (opts.link) return download(opts.link)
-
+  debug('starting', name, opts)
   self.db.get(name, function (err, dat) {
     if (err) return cb(err)
-    download(dat.link)
+    if (!opts.link || (dat.link === opts.link)) return download(dat.link)
+    else download(opts.link)
   })
 
   function download (link) {
     var db = Dat()
-    debug('downloading', link, 'to', location)
     var location = path.join(self.location, link)
+    debug('downloading', link, 'to', location)
     db.download(link, location, function (err, swarm) {
       if (err) return cb(err)
       debug('done downloading')
@@ -75,10 +76,6 @@ Manager.prototype.start = function (name, opts, cb) {
   }
 }
 
-Manager.prototype.createValueStream = function () {
-  return this.db.createValueStream()
-}
-
 Manager.prototype.delete = function (name, cb) {
   var self = this
   self.db.del(name, function (err) {
@@ -91,7 +88,7 @@ Manager.prototype.delete = function (name, cb) {
 }
 
 Manager.prototype.list = function (cb) {
-  collect(this.createValueStream(), cb)
+  collect(this.db.createValueStream(), cb)
 }
 
 Manager.prototype.close = function (cb) {

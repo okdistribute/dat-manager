@@ -10,8 +10,8 @@ function createRouter () {
   var router = Router()
   var manager = Manager()
 
-  router.set('/bundle.js', function (req, res, opts, cb) {
-    res.end(fs.readFileSync(path.join(__dirname, 'bundle.js')).toString())
+  router.set('/static/*', function (req, res, opts, cb) {
+    res.end(fs.readFileSync(path.join(__dirname, 'static', opts.splat)).toString())
   })
 
   router.set('/', function (req, res, opts, cb) {

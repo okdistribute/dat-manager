@@ -1,12 +1,21 @@
 <html>
   <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet/css" />
   </head>
   <body>
-    <div id="app">
+    <div class="container">
+      <div class="header">
+        <input type="text" placeholder="Name" id="name" />
+        <input type="text" placeholder="Link" id="link" />
+        <input type="submit" id="submit" value="New Dat" />
+      </div>
+      <div id="app">
+      </div>
     </div>
-    <input type="text" placeholder="Name" id="name" />
-    <input type="text" placeholder="Link" id="link" />
-    <input type="submit" id="submit" value="New Dat" />
-    <script src="bundle.js"></script>
+    <script src="/static/bundle.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
   </body>
 </html>

@@ -11,35 +11,47 @@ function request (name, method, cb) {
 }
 
 var StopButton = React.createClass({
+  getInitialState: function () {
+    return {loading: false}
+  },
   stop: function () {
     var self = this
+    self.setState({loading: true})
     request(self.props.list.props.dat.name, 'stop', function (err, resp, data) {
       if (err) throw err
-      self.props.list.flip()
+      self.setState({loading: false})
+      self.props.list.toggle()
     })
   },
   render: function () {
+    var icon = this.loading ? 'loop' : 'stop'
     return (
       <a className='btn red waves-effect waves-light list-item__button'
          onClick={this.stop}>
-      <i className='material-icons left'>stop</i>Stop</a>
+      <i className='material-icons left'>{icon}</i></a>
     )
   }
 })
 
 var StartButton = React.createClass({
+  getInitialState: function () {
+    return {loading: false}
+  },
   start: function () {
     var self = this
+    self.setState({loading: true})
     request(self.props.list.props.dat.name, 'start', function (err, resp, data) {
       if (err) throw err
-      self.props.list.flip()
+      self.setState({loading: false})
+      self.props.list.toggle()
     })
   },
   render: function () {
+    var icon = this.state.loading ? 'loop' : 'play_arrow'
     return (
       <a className='btn waves-effect waves-light list-item__button'
          onClick={this.start}>
-      <i className='material-icons left'>play_arrow</i>Start</a>
+      <i className='material-icons left'>{icon}</i></a>
     )
   }
 })
@@ -49,18 +61,21 @@ var ListItem = React.createClass({
   getInitialState: function () {
     return {running: this.props.dat.state === 'active'}
   },
-  flip: function () {
+  toggle: function () {
     this.setState(function (prev) {
       return {running: !prev.running}
     })
   },
   render: function () {
-    var running = this.state.running
     return (
       <div className='section list-item' onClick={this.handleClick}>
-        <h5 className='list-item__name'>{this.props.dat.name}</h5>
-        <div className='list-item__description'>{this.props.dat.link}</div>
-        { running ? <StopButton list={this} /> : <StartButton list={this}/>}
+        <div className="divider"></div>
+        <div className="row">
+          <h5 className='list-item__name col'>
+            { this.state.running ? <StopButton list={this} /> : <StartButton list={this}/> }
+            { this.props.dat.name }
+          </h5>
+        </div>
       </div>
     )
   }

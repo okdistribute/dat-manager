@@ -1,5 +1,6 @@
 var mkdirp = require('mkdirp')
 var collect = require('collect-stream')
+var extend = require('extend')
 var level = require('level')
 var parallel = require('run-parallel')
 var debug = require('debug')('dat-manager')
@@ -24,9 +25,41 @@ Manager.prototype.get = function (name, cb) {
   return this.db.get(name, cb)
 }
 
+Manager.prototype.rename = function (name, newName, cb) {
+  var self = this
+  self.db.get(name, function (err, data) {
+    if (err) return cb(err)
+    self.db.put(newName, data, function (err, data) {
+      if (err) return cb(err)
+      if (self.swarms[name]) {
+        self.swarms[newName] = self.swarms[name]
+        delete self.swarms[name]
+      }
+      self.db.del(name, data, cb)
+    })
+  })
+}
+
+Manager.prototype.update = function (name, data, cb) {
+  var self = this
+  if (!name) return cb(new Error('Name required'))
+  if (data.name !== name) {
+    self.rename(name, data.name, function (err) {
+      if (err) return cb(err)
+      self.update(data.name, data, cb)
+    })
+  } else {
+    self.db.get(name, function (err, oldData) {
+      if (err) return cb(err)
+      self.db.put(name, extend(oldData, data), cb)
+    })
+  }
+}
+
 Manager.prototype.stop = function (name, cb) {
   var self = this
   if (!name) return cb(new Error('Name required'))
+  console.log(this.swarms)
   var swarm = this.swarms[name]
   if (!swarm) return cb(new Error('No dat running with that name'))
   debug('stopping', name)
@@ -43,19 +76,22 @@ Manager.prototype.stop = function (name, cb) {
   })
 }
 
-Manager.prototype.start = function (name, opts, cb) {
+Manager.prototype.start = function (key, opts, cb) {
   var self = this
-  if (!name) return cb(new Error('Name required'))
-  debug('starting', name, opts)
-  self.db.get(name, function (err, dat) {
-    if (err) return cb(err)
-    if (!opts.link || (dat.link === opts.link)) return download(dat.link)
-    else download(opts.link)
+  if (!key) return cb(new Error('Name required'))
+  debug('starting', key, opts)
+  self.db.get(key, function (err, dat) {
+    if (err) {
+      if (err.notFound) return download(opts.link)
+      else return cb(err)
+    }
+    if (!opts.link) return download(dat.link)
+    return download(opts.link)
   })
 
   function download (link) {
     var db = Dat()
-    var location = path.join(self.location, link)
+    var location = path.join(self.location, link.replace('dat://', ''))
     debug('downloading', link, 'to', location)
     db.download(link, location, function (err, swarm) {
       if (err) return cb(err)
@@ -64,11 +100,10 @@ Manager.prototype.start = function (name, opts, cb) {
         state: 'active',
         link: link,
         date: Date.now(),
-        location: location,
-        name: name
+        location: location
       }
-      self.swarms[name] = swarm
-      self.db.put(name, dat, function (err) {
+      self.swarms[key] = swarm
+      self.db.put(key, dat, function (err) {
         if (err) return cb(err)
         return cb(null, dat)
       })
@@ -88,7 +123,7 @@ Manager.prototype.delete = function (name, cb) {
 }
 
 Manager.prototype.list = function (cb) {
-  collect(this.db.createValueStream(), cb)
+  collect(this.db.createReadStream(), cb)
 }
 
 Manager.prototype.close = function (cb) {
@@ -111,12 +146,12 @@ Manager.prototype.close = function (cb) {
 
 Manager.prototype.init = function (cb) {
   var self = this
-  var stream = self.db.createValueStream()
+  var stream = self.db.createReadStream()
   var funcs = []
 
   stream.on('data', function (dat) {
     funcs.push(function (done) {
-      if (dat.state === 'active') self.start(dat.name, {link: dat.link}, done)
+      if (dat.value.state === 'active') self.start(dat.key, {link: dat.value.link}, done)
       else done()
     })
   })

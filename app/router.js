@@ -1,5 +1,6 @@
 var Router = require('http-hash-router')
 var fs = require('fs')
+var json = require('body/json')
 var path = require('path')
 var Manager = require('../')
 var url = require('url')
@@ -31,7 +32,13 @@ function createRouter () {
   router.set('/dats/:name', function (req, res, opts, cb) {
     var name = opts.params.name
     if (req.method === 'GET') return manager.get(name, cb)
-    else if (req.method === 'DELETE') return manager.remove(name, cb)
+    if (req.method === 'DELETE') return manager.remove(name, cb)
+    if (req.method === 'PUT') {
+      return json(req, function (err, data) {
+        if (err) return cb(err)
+        manager.update(name, data, cb)
+      })
+    }
     return cb(new Error('Method not allowed.'))
   })
 

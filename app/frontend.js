@@ -9,7 +9,6 @@ var dats
 document.getElementById('submit').onclick = submit
 
 function submit (event) {
-  console.log('submitting', $link.value, $name.value)
   var opts = {
     uri: '/dats/' + $name.value + '/start?link=' + $link.value,
     json: true

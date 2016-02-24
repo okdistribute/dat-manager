@@ -3,15 +3,6 @@ var nets = require('nets')
 var ReactDOM = require('react-dom')
 var EditInPlace = require('react-editinplace')
 
-
-function request (name, method, cb) {
-  var opts = {
-    uri: '/dats/' + name + '/' + method,
-    json: true
-  }
-  return nets(opts, cb)
-}
-
 var StopButton = React.createClass({
   getInitialState: function () {
     return {loading: false}
@@ -19,7 +10,12 @@ var StopButton = React.createClass({
   stop: function () {
     var self = this
     self.setState({loading: true})
-    request(self.props.list.props.dat.name, 'stop', function (err, resp, data) {
+    var name = self.props.list.props.dat.key
+    var opts = {
+      uri: '/dats/' + name + '/stop',
+      json: true
+    }
+    nets(opts, function (err, resp, data) {
       if (err) throw err
       self.setState({loading: false})
       self.props.list.toggle()
@@ -42,7 +38,12 @@ var StartButton = React.createClass({
   start: function () {
     var self = this
     self.setState({loading: true})
-    request(self.props.list.props.dat.name, 'start', function (err, resp, data) {
+    var name = self.props.list.props.dat.key
+    var opts = {
+      uri: '/dats/' + name + '/start',
+      json: true
+    }
+    nets(opts, function (err, resp, data) {
       if (err) throw err
       self.setState({loading: false})
       self.props.list.toggle()
@@ -58,16 +59,45 @@ var StartButton = React.createClass({
   }
 })
 
+var DatName = React.createClass({
+  getInitialState: function () {
+    return {
+      name: this.props.name
+    }
+  },
+  nameChange: function (text) {
+    var self = this
+    var opts = {
+      uri: '/dats/' + self.state.name,
+      method: 'PUT',
+      json: {
+        name: text
+      }
+    }
+    nets(opts, function (err, resp, json) {
+      if (err) throw err
+      self.setState({name: text})
+    })
+  },
+  validation: function (text) {
+    var match = text.match(/^[a-zA-Z0-9_]*$/)
+    if (match) return true
+    else return false
+  },
+  render: function () {
+    return <EditInPlace
+      validate={this.validation}
+      onChange={this.nameChange}
+      text={this.state.name}
+      className='list-item__name' />
+  }
+})
 
 var ListItem = React.createClass({
   getInitialState: function () {
     return {
-      name: this.props.dat.name,
-      running: this.props.dat.state === 'active'
+      running: this.props.dat.value.state === 'active'
     }
-  },
-  nameChange: function (text) {
-    console.log(text)
   },
   toggle: function () {
     this.setState(function (prev) {
@@ -79,12 +109,9 @@ var ListItem = React.createClass({
       <div className='section list-item' onClick={this.handleClick}>
         <div className="divider"></div>
         <div className="row">
-          <EditInPlace
-            onChange={this.nameChange}
-            text={this.state.name}
-            className='list-item__name col' />
-          <p> { this.props.dat.link } </p>
-            { this.state.running ? <StopButton list={this} /> : <StartButton list={this}/> }
+          { this.state.running ? <StopButton list={this} /> : <StartButton list={this}/> }
+          <DatName name={this.props.dat.key} />
+          <p> { this.props.dat.value.link } </p>
         </div>
       </div>
     )

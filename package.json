@@ -42,6 +42,7 @@
     "watchify": "^3.7.0"
   },
   "devDependencies": {
+    "react-editinplace": "^1.0.3",
     "rimraf": "^2.5.1",
     "tape": "^4.4.0"
   }

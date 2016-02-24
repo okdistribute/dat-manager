@@ -1,6 +1,8 @@
 var React = require('react')
 var nets = require('nets')
 var ReactDOM = require('react-dom')
+var EditInPlace = require('react-editinplace')
+
 
 function request (name, method, cb) {
   var opts = {
@@ -28,7 +30,7 @@ var StopButton = React.createClass({
     return (
       <a className='btn red waves-effect waves-light list-item__button'
          onClick={this.stop}>
-      <i className='material-icons left'>{icon}</i></a>
+      <i className='material-icons'>{icon}</i></a>
     )
   }
 })
@@ -51,7 +53,7 @@ var StartButton = React.createClass({
     return (
       <a className='btn waves-effect waves-light list-item__button'
          onClick={this.start}>
-      <i className='material-icons left'>{icon}</i></a>
+      <i className='material-icons'>{icon}</i></a>
     )
   }
 })
@@ -59,7 +61,13 @@ var StartButton = React.createClass({
 
 var ListItem = React.createClass({
   getInitialState: function () {
-    return {running: this.props.dat.state === 'active'}
+    return {
+      name: this.props.dat.name,
+      running: this.props.dat.state === 'active'
+    }
+  },
+  nameChange: function (text) {
+    console.log(text)
   },
   toggle: function () {
     this.setState(function (prev) {
@@ -71,10 +79,12 @@ var ListItem = React.createClass({
       <div className='section list-item' onClick={this.handleClick}>
         <div className="divider"></div>
         <div className="row">
-          <h5 className='list-item__name col'>
+          <EditInPlace
+            onChange={this.nameChange}
+            text={this.state.name}
+            className='list-item__name col' />
+          <p> { this.props.dat.link } </p>
             { this.state.running ? <StopButton list={this} /> : <StartButton list={this}/> }
-            { this.props.dat.name }
-          </h5>
         </div>
       </div>
     )

@@ -8,11 +8,13 @@ document.getElementById('submit').onclick = submit
 
 function submit (event) {
   var opts = {
-    uri: '/dats/' + $name.value + '/start?link=' + $link.value,
+    uri: '/dats/' + $name.value.trim() + '/start?link=' + $link.value.trim(),
     json: true
   }
   xhr(opts, function (resp, json) {
     renderList()
+    $name.value = ''
+    $link.value = ''
   })
 }
 

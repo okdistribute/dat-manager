@@ -3,7 +3,6 @@ var ReactDOM = require('react-dom')
 var EditInPlace = require('react-editinplace')
 
 var xhr = require('../request.js')
-var error = require('./error.js')
 
 var StopButton = React.createClass({
   getInitialState: function () {
@@ -12,7 +11,7 @@ var StopButton = React.createClass({
   stop: function () {
     var self = this
     self.setState({loading: true})
-    var name = self.props.list.props.dat.key
+    var name = self.props.dat.key
     var opts = {
       uri: '/dats/' + name + '/stop',
       json: true
@@ -27,7 +26,7 @@ var StopButton = React.createClass({
     return (
       <a className='btn red waves-effect waves-light list-item__button'
          onClick={this.stop}>
-      <i className='material-icons'>{icon}</i></a>
+      <i className='material-icons left'>{icon}</i>Stop</a>
     )
   }
 })
@@ -39,7 +38,7 @@ var StartButton = React.createClass({
   start: function () {
     var self = this
     self.setState({loading: true})
-    var name = self.props.list.props.dat.key
+    var name = self.props.dat.key
     var opts = {
       uri: '/dats/' + name + '/start',
       json: true
@@ -54,7 +53,7 @@ var StartButton = React.createClass({
     return (
       <a className='btn waves-effect waves-light list-item__button'
          onClick={this.start}>
-      <i className='material-icons'>{icon}</i></a>
+      <i className='material-icons left'>{icon}</i> Start</a>
     )
   }
 })
@@ -62,11 +61,12 @@ var StartButton = React.createClass({
 var NameLabel = React.createClass({
   getInitialState: function () {
     return {
-      name: this.props.name
+      name: this.props.dat.key
     }
   },
-  nameChange: function (text) {
+  onchange: function (text) {
     var self = this
+    text = text.trim()
     var opts = {
       uri: '/dats/' + self.state.name,
       method: 'PUT',
@@ -79,25 +79,25 @@ var NameLabel = React.createClass({
     })
   },
   validation: function (text) {
+    text = text.trim()
     var match = text.match(/^[a-zA-Z0-9_]*$/)
     if (match) return true
     else return false
   },
   render: function () {
-    return <EditInPlace
-      validate={this.validation}
-      onChange={this.nameChange}
-      text={this.state.name}
-      className='list-item__name' />
+    return (
+    <h5>
+      <EditInPlace
+        validate={this.validation}
+        onChange={this.onchange}
+        text={this.state.name}
+        className='list-item__key' />
+    </h5>
+    )
   }
 })
 
-var ListItem = React.createClass({
-  getInitialState: function () {
-    return {
-      running: this.props.dat.value.state === 'active'
-    }
-  },
+var DeleteButton = React.createClass({
   delete: function () {
     var self = this
     var opts = {
@@ -109,6 +109,17 @@ var ListItem = React.createClass({
       render()
     })
   },
+  render: function () {
+    return <a onClick={this.delete} className='right waves-effect waves-light grey btn'>x</a>
+  }
+})
+
+var ListItem = React.createClass({
+  getInitialState: function () {
+    return {
+      running: this.props.dat.value.state === 'active'
+    }
+  },
   toggle: function () {
     this.setState(function (prev) {
       return {running: !prev.running}
@@ -117,12 +128,12 @@ var ListItem = React.createClass({
   render: function () {
     return (
       <div className='section list-item' onClick={this.handleClick}>
-        <div className="divider"></div>
-        <div className="row">
-          <a className="right btn" onClick={this.delete}>x</a>
-          { this.state.running ? <StopButton list={this} /> : <StartButton list={this}/> }
-          <NameLabel name={this.props.dat.key} />
-          <p> { this.props.dat.value.link } </p>
+        <div className='divider'></div>
+        <div className='row'>
+          <DeleteButton dat={this.props.dat} />
+          {this.state.running ? <StopButton list={this} dat={this.props.dat} /> : <StartButton list={this} dat={this.props.dat} />}
+          <NameLabel dat={this.props.dat} />
+          <p>{this.props.dat.value.link}</p>
         </div>
       </div>
     )
@@ -134,7 +145,7 @@ var List = React.createClass({
     return (
       <div>
         {this.props.dats.map(function (dat) {
-          return <ListItem dat={dat} />
+          return <ListItem key={dat.key} dat={dat} />
         })}
       </div>
     )

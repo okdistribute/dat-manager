@@ -59,7 +59,6 @@ Manager.prototype.update = function (name, data, cb) {
 Manager.prototype.stop = function (name, cb) {
   var self = this
   if (!name) return cb(new Error('Name required'))
-  console.log(this.swarms)
   var swarm = this.swarms[name]
   if (!swarm) return cb(new Error('No dat running with that name'))
   debug('stopping', name)
@@ -163,6 +162,7 @@ Manager.prototype.init = function (cb) {
   stream.on('end', function () {
     parallel(funcs, function (err) {
       if (err) return cb(err)
+      debug('done', self.swarms)
       return cb()
     })
   })

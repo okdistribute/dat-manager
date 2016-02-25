@@ -24,7 +24,7 @@ var StopButton = React.createClass({
   render: function () {
     var icon = this.loading ? 'loop' : 'stop'
     return (
-      <a className='btn red waves-effect waves-light list-item__button'
+      <a className='btn waves-effect waves-light list-item__button'
          onClick={this.stop}>
       <i className='material-icons left'>{icon}</i>Stop</a>
     )
@@ -110,7 +110,7 @@ var DeleteButton = React.createClass({
     })
   },
   render: function () {
-    return <a onClick={this.delete} className='right waves-effect waves-light grey btn'>x</a>
+    return <a onClick={this.delete} className='red waves-effect waves-light btn'>Delete</a>
   }
 })
 
@@ -128,12 +128,11 @@ var ListItem = React.createClass({
   render: function () {
     return (
       <div className='section list-item' onClick={this.handleClick}>
-        <div className='divider'></div>
-        <div className='row'>
-          <DeleteButton dat={this.props.dat} />
+        <NameLabel dat={this.props.dat} />
+        <p>{this.props.dat.value.link}</p>
+        <div>
           {this.state.running ? <StopButton list={this} dat={this.props.dat} /> : <StartButton list={this} dat={this.props.dat} />}
-          <NameLabel dat={this.props.dat} />
-          <p>{this.props.dat.value.link}</p>
+          <DeleteButton dat={this.props.dat} />
         </div>
       </div>
     )

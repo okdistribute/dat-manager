@@ -1,9 +1,10 @@
 # dat-manager
 
-Create, remove, and list deployed dats with http. 
+Create, remove, and list deployed dats with http.
 
 ## TODO:
-- [ ] finish frontend
+- [ ] Use hyperdrive instead of dat under the hood to improve deduplication
+- [ ] Try to reuse swarms when possible
 
 ## Built-in routes
 

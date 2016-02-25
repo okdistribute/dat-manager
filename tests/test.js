@@ -20,20 +20,23 @@ test('manager start and stop', function (t) {
       manager.stop('mydat', function (err) {
         t.ifError(err)
         t.same(manager.swarms.mydat, undefined)
-        manager.close(function () {
-          db.close()
-          t.end()
-        })
+        db.close()
+        t.end()
       })
     })
   })
 })
 
 test('list dats', function (t) {
-  manager.list(function (err, data) {
+  manager.start('mydat', {}, function (err) {
     t.ifError(err)
-    t.same(data[0].name, 'mydat')
-    t.same(data[0].state, 'inactive')
-    t.end()
+    manager.list(function (err, data) {
+      t.ifError(err)
+      t.same(data[0].key, 'mydat')
+      t.same(data[0].value.state, 'active')
+      manager.close(function () {
+        t.end()
+      })
+    })
   })
 })

@@ -1,4 +1,5 @@
 var mkdirp = require('mkdirp')
+var through = require('through2')
 var collect = require('collect-stream')
 var extend = require('extend')
 var level = require('level')
@@ -126,7 +127,15 @@ Manager.prototype.delete = function (name, cb) {
 }
 
 Manager.prototype.list = function (cb) {
-  collect(this.db.createReadStream(), cb)
+  var self = this
+  var readStream = this.db.createReadStream()
+  var metadata = through.obj(function (data, enc, next) {
+    var swarm = self.swarms[data.key]
+    console.log(swarm)
+    next(null, data)
+  })
+  var stream = readStream.pipe(metadata)
+  collect(stream, cb)
 }
 
 Manager.prototype.close = function (cb) {

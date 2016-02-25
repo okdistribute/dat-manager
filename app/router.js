@@ -31,15 +31,26 @@ function createRouter () {
 
   router.set('/dats/:name', function (req, res, opts, cb) {
     var name = opts.params.name
-    if (req.method === 'GET') return manager.get(name, cb)
-    if (req.method === 'DELETE') return manager.remove(name, cb)
-    if (req.method === 'PUT') {
-      return json(req, function (err, data) {
+    if (req.method === 'GET') {
+      manager.get(name, function (err, dat) {
         if (err) return cb(err)
-        manager.update(name, data, cb)
+        res.end(JSON.stringify(dat))
+      })
+    } else if (req.method === 'DELETE') {
+      manager.delete(name, function (err) {
+        if (err) return cb(err)
+        res.end('ok')
+      })
+    } else if (req.method === 'PUT') {
+      json(req, function (err, data) {
+        if (err) return cb(err)
+        manager.update(name, data, function (err) {
+          if (err) return cb(err)
+          res.end('ok')
+        })
       })
     }
-    return cb(new Error('Method not allowed.'))
+    else return cb(new Error('Method not allowed.'))
   })
 
   router.set('/dats/:name/start', function (req, res, opts, cb) {

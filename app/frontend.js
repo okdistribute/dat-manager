@@ -1,10 +1,8 @@
 var xhr = require('./request')
-var list = require('./components/list')
+var renderList = require('./components/list')
 
 var $name = document.getElementById('name')
 var $link = document.getElementById('link')
-
-var dats
 
 document.getElementById('submit').onclick = submit
 
@@ -14,7 +12,8 @@ function submit (event) {
     json: true
   }
   xhr(opts, function (resp, json) {
-    dats.push(json)
-    list(dats)
+    renderList()
   })
 }
+
+renderList()

@@ -115,11 +115,13 @@ Manager.prototype.start = function (key, opts, cb) {
 
 Manager.prototype.delete = function (name, cb) {
   var self = this
+  debug('deleting', name)
   self.db.del(name, function (err) {
     if (err) return cb(err)
     var swarm = self.swarms[name]
-    swarm.destroy()
+    if (swarm) swarm.destroy()
     self.swarms[name] = undefined
+    debug('done')
     cb()
   })
 }

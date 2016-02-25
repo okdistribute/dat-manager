@@ -119,7 +119,7 @@ var ListItem = React.createClass({
       <div className='section list-item' onClick={this.handleClick}>
         <div className="divider"></div>
         <div className="row">
-          <a onClick={this.delete}>x</a>
+          <a className="right btn" onClick={this.delete}>x</a>
           { this.state.running ? <StopButton list={this} /> : <StartButton list={this}/> }
           <NameLabel name={this.props.dat.key} />
           <p> { this.props.dat.value.link } </p>
@@ -141,10 +141,12 @@ var List = React.createClass({
   }
 })
 
-module.exports = function render (dats) {
-  if (dats) return _render(dats)
+module.exports = render
+
+function render (cb) {
   xhr({uri: '/dats', json: true}, function (resp, json) {
     _render(json.dats)
+    if (cb) cb(json.dats)
   })
 }
 

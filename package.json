@@ -24,7 +24,7 @@
   "homepage": "https://github.com/karissa/dat-manager#readme",
   "dependencies": {
     "collect-stream": "^1.1.1",
-    "dat": "^9.4.0",
+    "dat": "^9.4.1",
     "debug": "^2.2.0",
     "extend": "^3.0.0",
     "level": "^1.3.0",

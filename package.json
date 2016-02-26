@@ -23,9 +23,6 @@
   },
   "homepage": "https://github.com/karissa/dat-manager#readme",
   "dependencies": {
-    "babel-preset-react": "^6.5.0",
-    "babelify": "^7.2.0",
-    "body": "^5.1.0",
     "collect-stream": "^1.1.1",
     "debug": "^2.2.0",
     "extend": "^3.0.0",
@@ -34,17 +31,19 @@
     "level": "^1.3.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "nets": "^3.2.0",
-    "react": "^0.14.7",
-    "react-dom": "^0.14.7",
     "run-parallel": "^1.1.4",
     "through2": "^2.0.1",
-    "watchify": "^3.7.0",
-    "xhr": "^2.2.0"
   },
   "devDependencies": {
+    "body": "^5.1.0",
     "react-editinplace": "^1.0.3",
     "rimraf": "^2.5.1",
-    "tape": "^4.4.0"
+    "xhr": "^2.2.0",
+    "tape": "^4.4.0",
+    "babel-preset-react": "^6.5.0",
+    "watchify": "^3.7.0",
+    "babelify": "^7.2.0",
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7"
   }
 }

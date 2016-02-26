@@ -100,6 +100,7 @@ Manager.prototype.share = function (key, location, cb) {
 
 Manager.prototype.start = function (key, opts, cb) {
   var self = this
+  if ((typeof opts) === 'function') return self.start(key, {}, cb)
   if (!key) return cb(new Error('Name required'))
   var validated = key.match(/^[a-zA-Z0-9_]*$/)
   if (!validated) return cb(new Error('Name must contain no spaces or special characters except underscores.'))

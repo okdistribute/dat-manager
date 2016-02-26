@@ -93,7 +93,7 @@ Manager.prototype.start = function (key, opts, cb) {
 
   function download (link) {
     var db = Dat()
-    var location = path.join(self.location, link.replace('dat://', ''))
+    var location = opts.location || path.join(self.location, link.replace('dat://', ''))
     debug('downloading', link, 'to', location)
     db.download(link, location, function (err, swarm) {
       if (err) return cb(err)

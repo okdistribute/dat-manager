@@ -15,84 +15,78 @@ function Manager (opts) {
   if (!opts) opts = {}
   this.db = opts.db || createDb(opts)
   this.location = opts.location || path.resolve('dats')
-  this.swarms = {}
+  this.dat = Dat()
   this.init(function (err) {
     if (err) throw err
   })
 }
 
-Manager.prototype.get = function (name, cb) {
-  if (!name) return cb(new Error('Name required'))
-  return this.db.get(name, cb)
+Manager.prototype.get = function (key, cb) {
+  if (!key) return cb(new Error('key required'))
+  return this.db.get(key, cb)
 }
 
-Manager.prototype.rename = function (name, newName, cb) {
+Manager.prototype.rename = function (key, newkey, cb) {
   var self = this
-  self.db.get(name, function (err, data) {
+  self.db.get(key, function (err, data) {
     if (err) return cb(err)
-    self.db.put(newName, data, function (err, data) {
+    self.db.put(newkey, data, function (err, data) {
       if (err) return cb(err)
-      if (self.swarms[name]) {
-        self.swarms[newName] = self.swarms[name]
-        delete self.swarms[name]
-      }
-      self.db.del(name, data, cb)
+      self.db.del(key, data, cb)
     })
   })
 }
 
-Manager.prototype.update = function (name, data, cb) {
+Manager.prototype.update = function (key, data, cb) {
   var self = this
-  if (!name) return cb(new Error('Name required'))
-  if (data.name !== name) {
-    self.rename(name, data.name, function (err) {
+  if (!key) return cb(new Error('key required'))
+  if (data.key !== key) {
+    self.rename(key, data.key, function (err) {
       if (err) return cb(err)
-      self.update(data.name, data, cb)
+      self.update(data.key, data, cb)
     })
   } else {
-    self.db.get(name, function (err, oldData) {
+    self.db.get(key, function (err, oldData) {
       if (err) return cb(err)
-      self.db.put(name, extend(oldData, data), cb)
+      self.db.put(key, extend(oldData, data), cb)
     })
   }
 }
 
-Manager.prototype.stop = function (name, cb) {
+Manager.prototype.stop = function (key, cb) {
   var self = this
-  if (!name) return cb(new Error('Name required'))
-  var swarm = this.swarms[name]
-  if (!swarm) return cb(new Error('No dat running with that name'))
-  debug('stopping', name)
-  swarm.destroy()
-  this.swarms[name] = undefined
-  self.db.get(name, function (err, dat) {
+  if (!key) return cb(new Error('key required'))
+  self.db.get(key, function (err, dat) {
     if (err) return cb(err)
     dat.state = 'inactive'
-    self.db.put(name, dat, function (err) {
+    debug('stopping', dat)
+    self.dat.swarm.remove(dat.link)
+    self.db.put(key, dat, function (err) {
       if (err) return cb(err)
       debug('done', dat)
-      cb(null, dat)
+      cb(null, {key: key, value: dat})
     })
   })
 }
 
 Manager.prototype.share = function (key, location, cb) {
-  var db = Dat()
   var self = this
-  db.addFiles(location, function (err, link) {
+  debug('adding files for', key, 'from', location)
+  self.dat.addFiles(location, function (err, link) {
     if (err) return cb(err)
-    db.joinTcpSwarm({link: link}, function (_err, swarm) {
+    debug('finished adding files', link)
+    self.dat.joinTcpSwarm({link: link}, function (_err, swarm) {
       if (err) return cb(err)
+      debug('joined swarm')
       var dat = {
         state: 'active',
         link: link,
         date: Date.now(),
         location: location
       }
-      self.swarms[key] = swarm
       self.db.put(key, dat, function (err) {
         if (err) return cb(err)
-        return cb(null, dat)
+        return cb(null, {key: key, value: dat})
       })
     })
   })
@@ -100,24 +94,29 @@ Manager.prototype.share = function (key, location, cb) {
 
 Manager.prototype.start = function (key, opts, cb) {
   var self = this
-  if ((typeof opts) === 'function') return self.start(key, {}, cb)
-  if (!key) return cb(new Error('Name required'))
-  var validated = key.match(/^[a-zA-Z0-9_]*$/)
-  if (!validated) return cb(new Error('Name must contain no spaces or special characters except underscores.'))
-  debug('starting', key, opts)
+  if ((typeof opts) === 'function') return self.start(key, {}, opts)
+  if (!opts) opts = {}
+  if (!key) return cb(new Error('key required'))
+  var validated = key.match(/^[a-zA-Z0-9_ ]*$/)
+  if (!validated) return cb(new Error('key must contain no special characters except underscores. got ' + key))
+  debug('starting', key)
   self.db.get(key, function (err, dat) {
     if (err) {
       if (err.notFound) return download(opts.link)
       else return cb(err)
     }
-    if (self.swarms[key]) return cb(null, dat)
-    if (!opts.link) return download(dat.link)
-    return download(opts.link)
+    if (opts.link) return download(opts.link, dat)
+    debug('joining swarm', dat)
+    self.dat.joinTcpSwarm({link: dat.link}, function (err, swarm) {
+      if (err) return cb(err)
+      debug('done joining', swarm)
+      return cb(null, {key: key, value: dat})
+    })
   })
 
-  function download (link) {
+  function download (link, dat) {
     var db = Dat()
-    var location = opts.location || path.join(self.location, link.replace('dat://', ''))
+    var location = opts.location || (dat && dat.location) || path.join(self.location, link.replace('dat://', ''))
     debug('downloading', link, 'to', location)
     db.download(link, location, function (err, swarm) {
       if (err) return cb(err)
@@ -128,34 +127,31 @@ Manager.prototype.start = function (key, opts, cb) {
         date: Date.now(),
         location: location
       }
-      self.swarms[key] = swarm
       self.db.put(key, dat, function (err) {
         if (err) return cb(err)
-        return cb(null, dat)
+        return cb(null, {key: key, value: dat})
       })
     })
   }
 }
 
-Manager.prototype.delete = function (name, cb) {
+Manager.prototype.delete = function (key, cb) {
   var self = this
-  debug('deleting', name)
-  self.db.del(name, function (err) {
+  debug('deleting', key)
+  self.db.get(key, function (err, dat) {
     if (err) return cb(err)
-    var swarm = self.swarms[name]
-    if (swarm) swarm.destroy()
-    self.swarms[name] = undefined
-    debug('done')
-    cb()
+    self.dat.swarm.remove(dat.link)
+    self.db.del(key, function (err) {
+      if (err) return cb(err)
+      debug('done')
+      cb(null)
+    })
   })
 }
 
 Manager.prototype.list = function (cb) {
-  var self = this
   var readStream = this.db.createReadStream()
   var metadata = through.obj(function (data, enc, next) {
-    var swarm = self.swarms[data.key]
-    console.log(swarm)
     next(null, data)
   })
   var stream = readStream.pipe(metadata)
@@ -163,21 +159,8 @@ Manager.prototype.list = function (cb) {
 }
 
 Manager.prototype.close = function (cb) {
-  var self = this
-  var stream = self.db.createKeyStream()
-  var funcs = []
-  stream.on('data', function (name) {
-    funcs.push(function (done) {
-      self.stop(name, done)
-    })
-  })
-  stream.on('end', function () {
-    parallel(funcs, function (err) {
-      if (err) return cb(err)
-      self.db.close()
-      return cb()
-    })
-  })
+  this.db.close()
+  this.dat.close(cb)
 }
 
 Manager.prototype.init = function (cb) {
@@ -187,7 +170,7 @@ Manager.prototype.init = function (cb) {
 
   stream.on('data', function (dat) {
     funcs.push(function (done) {
-      if (dat.value.state === 'active') self.start(dat.key, {link: dat.value.link}, done)
+      if (dat.value.state === 'active') self.start(dat.key, done)
       else done()
     })
   })
@@ -195,7 +178,6 @@ Manager.prototype.init = function (cb) {
   stream.on('end', function () {
     parallel(funcs, function (err) {
       if (err) return cb(err)
-      debug('done', self.swarms)
       return cb()
     })
   })

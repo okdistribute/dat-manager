@@ -110,6 +110,7 @@ Manager.prototype.start = function (key, opts, cb) {
       if (err.notFound) return download(opts.link)
       else return cb(err)
     }
+    if (self.swarms[key]) return cb(null, dat)
     if (!opts.link) return download(dat.link)
     return download(opts.link)
   })

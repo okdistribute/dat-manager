@@ -76,6 +76,28 @@ Manager.prototype.stop = function (name, cb) {
   })
 }
 
+Manager.prototype.share = function (key, location, cb) {
+  var db = Dat()
+  var self = this
+  db.addFiles(location, function (err, link) {
+    if (err) return cb(err)
+    db.joinTcpSwarm({link: link}, function (_err, swarm) {
+      if (err) return cb(err)
+      var dat = {
+        state: 'active',
+        link: link,
+        date: Date.now(),
+        location: location
+      }
+      self.swarms[key] = swarm
+      self.db.put(key, dat, function (err) {
+        if (err) return cb(err)
+        return cb(null, dat)
+      })
+    })
+  })
+}
+
 Manager.prototype.start = function (key, opts, cb) {
   var self = this
   if (!key) return cb(new Error('Name required'))

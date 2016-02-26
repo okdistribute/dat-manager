@@ -24,17 +24,18 @@
   "homepage": "https://github.com/karissa/dat-manager#readme",
   "dependencies": {
     "collect-stream": "^1.1.1",
+    "dat": "^9.4.0",
     "debug": "^2.2.0",
     "extend": "^3.0.0",
-    "getport": "^0.1.0",
-    "http-hash-router": "^1.1.0",
     "level": "^1.3.0",
-    "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "run-parallel": "^1.1.4",
-    "through2": "^2.0.1",
+    "through2": "^2.0.1"
   },
   "devDependencies": {
+    "minimist": "^1.2.0",
+    "getport": "^0.1.0",
+    "http-hash-router": "^1.1.0",
     "body": "^5.1.0",
     "react-editinplace": "^1.0.3",
     "rimraf": "^2.5.1",

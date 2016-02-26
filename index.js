@@ -184,7 +184,7 @@ Manager.prototype.init = function (cb) {
 }
 
 function createDb (opts) {
-  opts.DB_PATH = opts.DB_PATH || './data'
+  opts.DB_PATH = opts.DB_PATH || path.resolve('data')
   mkdirp.sync(opts.DB_PATH)
   return level(opts.DB_PATH, { valueEncoding: 'json' })
 }

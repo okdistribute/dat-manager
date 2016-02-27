@@ -101,29 +101,24 @@ Manager.prototype.start = function (key, opts, cb) {
   if (!validated) return cb(new Error('key must contain no special characters except underscores. got ' + key))
   debug('starting', key)
   self.db.get(key, function (err, dat) {
+    var location = opts.location || (dat && dat.location) || path.join(self.location, opts.link.replace('dat://', ''))
     if (err) {
-      if (err.notFound) return download(opts.link)
+      if (err.notFound) return self.download(opts.link, location, done)
       else return cb(err)
     }
-    if (opts.link) return download(opts.link, dat)
+    if (opts.link) return self.download(opts.link, location, done)
+
     debug('joining swarm', dat)
     self.dat.joinTcpSwarm({link: dat.link}, function (err, swarm) {
       if (err) return cb(err)
       debug('done joining', swarm)
       return cb(null, {key: key, value: dat})
     })
-  })
 
-  function download (link, dat) {
-    var db = Dat()
-    var location = opts.location || (dat && dat.location) || path.join(self.location, link.replace('dat://', ''))
-    debug('downloading', link, 'to', location)
-    db.download(link, location, function (err, swarm) {
-      if (err) return cb(err)
-      debug('done downloading')
+    function done () {
       var dat = {
         state: 'active',
-        link: link,
+        link: opts.link,
         date: Date.now(),
         location: location
       }
@@ -131,8 +126,18 @@ Manager.prototype.start = function (key, opts, cb) {
         if (err) return cb(err)
         return cb(null, {key: key, value: dat})
       })
-    })
-  }
+    }
+  })
+}
+
+Manager.prototype.download = function (link, location, cb) {
+  var self = this
+  debug('downloading', link, 'to', location)
+  self.dat.download(link, location, function (err, swarm) {
+    if (err) return cb(err)
+    debug('done downloading')
+    cb(null)
+  })
 }
 
 Manager.prototype.delete = function (key, cb) {

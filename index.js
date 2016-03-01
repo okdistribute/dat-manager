@@ -6,7 +6,7 @@ var level = require('level')
 var parallel = require('run-parallel')
 var debug = require('debug')('dat-manager')
 var path = require('path')
-var Dat = require('dat')
+var Dat = require('./dat.js')
 
 module.exports = Manager
 
@@ -15,7 +15,7 @@ function Manager (opts) {
   if (!opts) opts = {}
   this.db = opts.db || createDb(opts)
   this.location = opts.location || path.resolve('dats')
-  this.dat = Dat()
+  this.dat = Dat({db: this.db})
   this.init(function (err) {
     if (err) throw err
   })
@@ -72,22 +72,18 @@ Manager.prototype.stop = function (key, cb) {
 Manager.prototype.share = function (key, location, cb) {
   var self = this
   debug('adding files for', key, 'from', location)
-  self.dat.addFiles(location, function (err, link) {
+  self.dat.add(location, function (err, link, stats) {
     if (err) return cb(err)
-    debug('finished adding files', link)
-    self.dat.joinTcpSwarm({link: link}, function (_err, swarm) {
+    console.log('stats', stats)
+    var dat = {
+      state: 'active',
+      link: link,
+      date: Date.now(),
+      location: location
+    }
+    self.db.put(key, dat, function (err) {
       if (err) return cb(err)
-      debug('joined swarm')
-      var dat = {
-        state: 'active',
-        link: link,
-        date: Date.now(),
-        location: location
-      }
-      self.db.put(key, dat, function (err) {
-        if (err) return cb(err)
-        return cb(null, {key: key, value: dat})
-      })
+      return cb(null, {key: key, value: dat})
     })
   })
 }
@@ -103,34 +99,22 @@ Manager.prototype.start = function (key, opts, cb) {
   self.db.get(key, function (err, dat) {
     var location = opts.location || (dat && dat.location) || path.join(self.location, opts.link.replace('dat://', ''))
     if (err) {
-      if (err.notFound) return self.download(opts.link, location, done)
-      else return cb(err)
-    }
-    if (opts.link) return self.download(opts.link, location, done)
-    else return self.download(dat.link, location, done)
-
-    function done () {
-      var dat = {
+      if (!err.notFound) return cb(err)
+      dat = {
         state: 'active',
-        link: opts.link || dat.link,
+        link: opts.link,
         date: Date.now(),
         location: location
       }
+    }
+    if (opts.link) dat.link = opts.link
+    self.dat.download(dat.link, dat.location, function (err) {
+      if (err) return cb(err)
       self.db.put(key, dat, function (err) {
         if (err) return cb(err)
         return cb(null, {key: key, value: dat})
       })
-    }
-  })
-}
-
-Manager.prototype.download = function (link, location, cb) {
-  var self = this
-  debug('downloading', link, 'to', location)
-  self.dat.download(link, location, function (err, swarm) {
-    if (err) return cb(err)
-    debug('done downloading')
-    cb(null)
+    })
   })
 }
 
@@ -139,7 +123,7 @@ Manager.prototype.delete = function (key, cb) {
   debug('deleting', key)
   self.db.get(key, function (err, dat) {
     if (err) return cb(err)
-    self.dat.swarm.remove(dat.link)
+    self.dat.swarm.leave(dat.link)
     self.db.del(key, function (err) {
       if (err) return cb(err)
       debug('done')

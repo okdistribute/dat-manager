@@ -20,10 +20,14 @@
     "collect-stream": "^1.1.1",
     "dat": "^9.4.1",
     "debug": "^2.2.0",
+    "discovery-swarm": "^3.0.1",
     "extend": "^3.0.0",
+    "folder-walker": "^2.1.1",
+    "hyperdrive": "^3.5.1",
     "level": "^1.3.0",
     "mkdirp": "^0.5.1",
     "run-parallel": "^1.1.4",
+    "stream-each": "^1.1.2",
     "through2": "^2.0.1"
   },
   "devDependencies": {}

@@ -112,7 +112,7 @@ Manager.prototype.start = function (key, opts, cb) {
     function done () {
       var dat = {
         state: 'active',
-        link: opts.link,
+        link: opts.link || dat.link,
         date: Date.now(),
         location: location
       }

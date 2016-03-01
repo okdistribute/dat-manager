@@ -107,13 +107,7 @@ Manager.prototype.start = function (key, opts, cb) {
       else return cb(err)
     }
     if (opts.link) return self.download(opts.link, location, done)
-
-    debug('joining swarm', dat)
-    self.dat.joinTcpSwarm({link: dat.link}, function (err, swarm) {
-      if (err) return cb(err)
-      debug('done joining', swarm)
-      return cb(null, {key: key, value: dat})
-    })
+    else return self.download(dat.link, location, done)
 
     function done () {
       var dat = {

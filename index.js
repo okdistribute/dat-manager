@@ -15,7 +15,7 @@ function Manager (opts) {
   if (!opts) opts = {}
   this.db = opts.db || createDb(opts)
   this.location = opts.location || path.resolve('dats')
-  this.dat = Dat({db: this.db})
+  this.dat = Dat({db: opts.datdb})
   this.init(function (err) {
     if (err) throw err
   })

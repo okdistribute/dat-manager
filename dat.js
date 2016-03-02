@@ -1,5 +1,6 @@
 var Swarm = require('discovery-swarm')
 var Hyperdrive = require('hyperdrive')
+var level = require('level')
 var path = require('path')
 var each = require('stream-each')
 var walker = require('folder-walker')
@@ -21,7 +22,7 @@ module.exports = Dat
 function Dat (opts) {
   if (!(this instanceof Dat)) return new Dat(opts)
   var self = this
-  self.drive = Hyperdrive(opts.db)
+  self.drive = Hyperdrive(opts.db || level('./data'))
   self.swarm = Swarm({
     id: self.drive.core.id,
     dns: {server: DEFAULT_DISCOVERY, domain: DAT_DOMAIN},
@@ -52,7 +53,6 @@ Dat.prototype.add = function (dirs, cb) {
       size: data.stat.size
     }
     archive.appendFile(item.path, item.name, next)
-    next(null, item)
   })
 
   stream.on('error', cb)
@@ -71,30 +71,26 @@ Dat.prototype.download = function (link, location, cb) {
   self.swarm.join(link)
   var archive = self.drive.get(link, location)
   console.log('downloading', link, location)
-  archive.ready(function (err) {
-    if (err) return (err)
-    var metadata = archive.createEntryStream()
-    var stats = {
-      size: 0
-    }
-    console.log('stats', stats)
-    metadata.on('data', function (entry) {
-      var dl = archive.download(entry)
-      stats.size += entry.size
-      console.log('entry', entry)
+  var metadata = archive.createEntryStream()
+  var stats = {
+    size: 0
+  }
+  metadata.on('data', function (entry) {
+    var dl = archive.download(entry)
+    stats.size += entry.size
+    console.log('entry', entry)
 
-      dl.on('ready', function () {
-        console.log('download started', entry.name, dl)
-      })
+    dl.on('ready', function () {
+      console.log('download started', entry.name, dl)
+    })
 
-      dl.on('end', function () {
-        console.log('done', entry.size)
-      })
+    dl.on('end', function () {
+      console.log('done', entry.size)
     })
-    metadata.on('error', cb)
-    metadata.on('end', function () {
-      cb(null, stats)
-    })
+  })
+  metadata.on('error', cb)
+  metadata.on('end', function () {
+    cb(null, stats)
   })
 
   self.swarm.listen()

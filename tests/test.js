@@ -7,7 +7,8 @@ var test = require('tape')
 var location = path.join(__dirname, 'manager_test')
 var manager = Manager({
   location: location,
-  db: memdb({valueEncoding: 'json'})
+  datdb: memdb(),
+  db: memdb({ valueEncoding: 'json' })
 })
 
 test('manager start and stop', function (t) {

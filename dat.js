@@ -68,7 +68,7 @@ Dat.prototype.add = function (dirs, cb) {
 
 Dat.prototype.download = function (link, location, cb) {
   var self = this
-  self.swarm.join(link)
+  self.swarm.join(new Buffer(link, 'hex'))
   var archive = self.drive.get(link, location)
   console.log('downloading', link, location)
   var metadata = archive.createEntryStream()
@@ -94,4 +94,9 @@ Dat.prototype.download = function (link, location, cb) {
   })
 
   self.swarm.listen()
+}
+
+Dat.prototype.close = function (cb) {
+  this.drive.core.db.close()
+  this.swarm.destroy(cb)
 }

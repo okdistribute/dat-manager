@@ -31,6 +31,7 @@ function Dat (opts) {
       return self.drive.createPeerStream()
     }
   })
+  self.swarm.listen(0)
 }
 
 Dat.prototype.add = function (dirs, cb) {
@@ -70,7 +71,6 @@ Dat.prototype.download = function (link, location, cb) {
   var self = this
   self.swarm.join(new Buffer(link, 'hex'))
   var archive = self.drive.get(link, location)
-  console.log('downloading', link, location)
   var metadata = archive.createEntryStream()
   var stats = {
     size: 0
@@ -92,8 +92,6 @@ Dat.prototype.download = function (link, location, cb) {
   metadata.on('end', function () {
     cb(null, stats)
   })
-
-  self.swarm.listen()
 }
 
 Dat.prototype.close = function (cb) {

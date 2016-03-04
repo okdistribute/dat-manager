@@ -1,6 +1,7 @@
 var Swarm = require('discovery-swarm')
 var Hyperdrive = require('hyperdrive')
 var level = require('level')
+var debug = require('debug')('dat-manager')
 var path = require('path')
 var each = require('stream-each')
 var walker = require('folder-walker')
@@ -69,6 +70,8 @@ Dat.prototype.add = function (dirs, cb) {
 
 Dat.prototype.download = function (link, location, cb) {
   var self = this
+  link = link.replace('dat://', '').replace('dat:', '')
+  debug('joining', link)
   self.swarm.join(new Buffer(link, 'hex'))
   var archive = self.drive.get(link, location)
   var metadata = archive.createEntryStream()

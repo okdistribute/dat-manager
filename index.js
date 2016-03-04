@@ -93,8 +93,8 @@ Manager.prototype.start = function (key, opts, cb) {
   if ((typeof opts) === 'function') return self.start(key, {}, opts)
   if (!opts) opts = {}
   if (!key) return cb(new Error('key required'))
-  var validated = key.match(/^[a-zA-Z0-9_ ]*$/)
-  if (!validated) return cb(new Error('key must contain no special characters except underscores. got ' + key))
+  var validated = key.match(/^[a-zA-Z0-9_ -]*$/)
+  if (!validated) return cb(new Error('key must contain no special characters, got ' + key))
   debug('starting', key)
   self.db.get(key, function (err, dat) {
     var location = opts.location || (dat && dat.location) || path.join(self.location, opts.link.replace('dat://', ''))

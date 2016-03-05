@@ -74,12 +74,13 @@ Manager.prototype.share = function (key, location, cb) {
   debug('adding files for', key, 'from', location)
   self.dat.add(location, function (err, link, stats) {
     if (err) return cb(err)
-    console.log('stats', stats)
+    debug('stats', stats)
     var dat = {
       state: 'active',
       link: link,
       date: Date.now(),
-      location: location
+      location: location,
+      stats: stats
     }
     self.db.put(key, dat, function (err) {
       if (err) return cb(err)
@@ -90,12 +91,13 @@ Manager.prototype.share = function (key, location, cb) {
 
 Manager.prototype.start = function (key, opts, cb) {
   var self = this
+  debug('starting', key)
   if ((typeof opts) === 'function') return self.start(key, {}, opts)
   if (!opts) opts = {}
   if (!key) return cb(new Error('key required'))
+  key = key.replace('dat://', '').replace('dat:', '')
   var validated = key.match(/^[a-zA-Z0-9_ -]*$/)
   if (!validated) return cb(new Error('key must contain no special characters, got ' + key))
-  debug('starting', key)
   self.db.get(key, function (err, dat) {
     var location = opts.location || (dat && dat.location) || path.join(self.location, opts.link.replace('dat://', ''))
     if (err) {
@@ -108,8 +110,9 @@ Manager.prototype.start = function (key, opts, cb) {
       }
     }
     if (opts.link) dat.link = opts.link
-    self.dat.download(dat.link, dat.location, function (err) {
+    self.dat.download(dat.link, dat.location, function (err, stats) {
       if (err) return cb(err)
+      dat.stats = stats
       self.db.put(key, dat, function (err) {
         if (err) return cb(err)
         return cb(null, {key: key, value: dat})

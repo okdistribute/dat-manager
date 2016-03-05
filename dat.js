@@ -55,13 +55,12 @@ Dat.prototype.add = function (dirs, cb) {
       size: data.stat.size
     }
     archive.appendFile(item.path, item.name, next)
-  })
-
-  stream.on('error', cb)
-  stream.on('end', function () {
+  }, function (err) {
+    if (err) return cb(err)
     archive.finalize(function (err) {
       if (err) return cb(err)
       var link = archive.id.toString('hex')
+      debug('done', link, archive.stats)
       self.swarm.join(link)
       cb(null, link, archive.stats)
     })
@@ -81,14 +80,14 @@ Dat.prototype.download = function (link, location, cb) {
   metadata.on('data', function (entry) {
     var dl = archive.download(entry)
     stats.size += entry.size
-    console.log('entry', entry)
+    debug('entry', entry)
 
     dl.on('ready', function () {
-      console.log('download started', entry.name, dl)
+      debug('download started', entry.name, dl)
     })
 
     dl.on('end', function () {
-      console.log('done', entry.size)
+      debug('done', entry.size)
     })
   })
   metadata.on('error', cb)

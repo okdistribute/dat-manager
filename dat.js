@@ -24,7 +24,7 @@ module.exports = Dat
 function Dat (opts) {
   if (!(this instanceof Dat)) return new Dat(opts)
   var self = this
-  var dbDir = path.join(opts.home || homeDir(), '.datapp', 'dat')
+  var dbDir = path.join(opts.home || homeDir(), '.datmanager', 'db')
   self.drive = Hyperdrive(opts.db || level(dbDir))
   self.swarm = Swarm({
     id: self.drive.core.id,

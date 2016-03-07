@@ -112,7 +112,8 @@ Manager.prototype.start = function (key, opts, cb) {
     if (opts.link) dat.link = opts.link
     self.dat.download(dat.link, dat.location, function (err, stats) {
       if (err) return cb(err)
-      dat.stats = stats
+      if (stats.bytesRead > 0) dat.stats = stats
+      debug('updating', dat)
       self.db.put(key, dat, function (err) {
         if (err) return cb(err)
         return cb(null, {key: key, value: dat})

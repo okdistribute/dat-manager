@@ -17,6 +17,11 @@ test('basic manager options', function (t) {
 })
 
 test('manager start and stop', function (t) {
+  var manager = Manager({
+    location: location,
+    datdb: memdb(),
+    db: memdb({ valueEncoding: 'json' })
+  })
   var db = Dat()
   db.addFiles(path.join(__dirname, 'fixtures'), function (err, link) {
     t.ifError(err)

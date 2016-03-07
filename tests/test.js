@@ -5,10 +5,15 @@ var memdb = require('memdb')
 var test = require('tape')
 
 var location = path.join(__dirname, 'manager_test')
-var manager = Manager({
-  location: location,
-  datdb: memdb(),
-  db: memdb({ valueEncoding: 'json' })
+
+test('basic manager options', function (t) {
+  var manager = Manager()
+  manager.list(function (err, data) {
+    t.ifError(err)
+    t.equal(data.length, 0, 'no data')
+    manager.close()
+    t.end()
+  })
 })
 
 test('manager start and stop', function (t) {

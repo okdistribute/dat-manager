@@ -1,7 +1,9 @@
 var Swarm = require('discovery-swarm')
 var Hyperdrive = require('hyperdrive')
-var level = require('level')
+var debug = require('debug')('dat-manager')
 var path = require('path')
+var homeDir = require('os-homedir')
+var level = require('level')
 var each = require('stream-each')
 var walker = require('folder-walker')
 
@@ -22,7 +24,8 @@ module.exports = Dat
 function Dat (opts) {
   if (!(this instanceof Dat)) return new Dat(opts)
   var self = this
-  self.drive = Hyperdrive(opts.db || level('./data'))
+  var dbDir = path.join(opts.home || homeDir(), '.datmanager', 'db')
+  self.drive = Hyperdrive(opts.db || level(dbDir))
   self.swarm = Swarm({
     id: self.drive.core.id,
     dns: {server: DEFAULT_DISCOVERY, domain: DAT_DOMAIN},
@@ -31,6 +34,7 @@ function Dat (opts) {
       return self.drive.createPeerStream()
     }
   })
+  self.swarm.listen(0)
 }
 
 Dat.prototype.add = function (dirs, cb) {
@@ -53,13 +57,12 @@ Dat.prototype.add = function (dirs, cb) {
       size: data.stat.size
     }
     archive.appendFile(item.path, item.name, next)
-  })
-
-  stream.on('error', cb)
-  stream.on('end', function () {
+  }, function (err) {
+    if (err) return cb(err)
     archive.finalize(function (err) {
       if (err) return cb(err)
       var link = archive.id.toString('hex')
+      debug('done', link, archive.stats)
       self.swarm.join(link)
       cb(null, link, archive.stats)
     })
@@ -68,32 +71,27 @@ Dat.prototype.add = function (dirs, cb) {
 
 Dat.prototype.download = function (link, location, cb) {
   var self = this
+  link = link.replace('dat://', '').replace('dat:', '')
+  debug('joining', link)
   self.swarm.join(new Buffer(link, 'hex'))
   var archive = self.drive.get(link, location)
-  console.log('downloading', link, location)
   var metadata = archive.createEntryStream()
-  var stats = {
-    size: 0
-  }
   metadata.on('data', function (entry) {
     var dl = archive.download(entry)
-    stats.size += entry.size
-    console.log('entry', entry)
+    debug('entry', entry)
 
     dl.on('ready', function () {
-      console.log('download started', entry.name, dl)
+      debug('download started', entry.name, dl)
     })
 
     dl.on('end', function () {
-      console.log('done', entry.size)
+      debug('done', entry.size)
     })
   })
   metadata.on('error', cb)
   metadata.on('end', function () {
-    cb(null, stats)
+    cb(null, archive.stats)
   })
-
-  self.swarm.listen()
 }
 
 Dat.prototype.close = function (cb) {

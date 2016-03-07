@@ -1,8 +1,9 @@
 var Swarm = require('discovery-swarm')
 var Hyperdrive = require('hyperdrive')
-var level = require('level')
 var debug = require('debug')('dat-manager')
 var path = require('path')
+var homeDir = require('os-homedir')
+var level = require('level')
 var each = require('stream-each')
 var walker = require('folder-walker')
 
@@ -23,7 +24,8 @@ module.exports = Dat
 function Dat (opts) {
   if (!(this instanceof Dat)) return new Dat(opts)
   var self = this
-  self.drive = Hyperdrive(opts.db || level('./data'))
+  var dbDir = path.join(opts.home || homeDir(), '.datapp', 'dat')
+  self.drive = Hyperdrive(opts.db || level(dbDir))
   self.swarm = Swarm({
     id: self.drive.core.id,
     dns: {server: DEFAULT_DISCOVERY, domain: DAT_DOMAIN},

@@ -74,12 +74,8 @@ Dat.prototype.download = function (link, location, cb) {
   self.swarm.join(new Buffer(link, 'hex'))
   var archive = self.drive.get(link, location)
   var metadata = archive.createEntryStream()
-  var stats = {
-    size: 0
-  }
   metadata.on('data', function (entry) {
     var dl = archive.download(entry)
-    stats.size += entry.size
     debug('entry', entry)
 
     dl.on('ready', function () {
@@ -92,7 +88,7 @@ Dat.prototype.download = function (link, location, cb) {
   })
   metadata.on('error', cb)
   metadata.on('end', function () {
-    cb(null, stats)
+    cb(null, archive.stats)
   })
 }
 

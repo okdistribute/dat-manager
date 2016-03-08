@@ -1,6 +1,8 @@
 var Manager = require('../')
 var Dat = require('dat')
+var LocalDat = require('../dat')
 var path = require('path')
+var os = require('os')
 var memdb = require('memdb')
 var test = require('tape')
 
@@ -28,6 +30,25 @@ test('manager start and stop', function (t) {
             t.end()
           })
         })
+      })
+    })
+  })
+})
+
+test('manager share', function (t) {
+  var manager = Manager()
+  var shareFiles = path.join(__dirname, 'fixtures')
+  var tmpDir = os.tmpDir()
+  manager.share('manager_share_test', shareFiles, function (err, data) {
+    t.ifError(err)
+    t.same(data.key, 'manager_share_test')
+    t.same(data.value.state, 'active')
+    var db = LocalDat({})
+    db.download(data.value.link, tmpDir, function (err, stats) {
+      t.ifError(err)
+      manager.close(function () {
+        db.close()
+        t.end()
       })
     })
   })

@@ -6,6 +6,8 @@ var path = require('path')
 var homeDir = require('os-homedir')
 var level = require('level-party')
 var each = require('stream-each')
+var pump = require('pump')
+var through = require('through2')
 var walker = require('folder-walker')
 
 var DAT_DOMAIN = 'dat.local'
@@ -77,9 +79,11 @@ Dat.prototype.download = function (link, location, cb) {
   debug('joining', link)
   self.swarm.join(new Buffer(link, 'hex'))
   var archive = self.drive.get(link, location)
-  var metadata = archive.createEntryStream()
-  metadata.on('data', function (entry) {
-    var dl = archive.download(entry)
+  var downloadEntry = through.obj(function (entry, encoding, next) {
+    var dl = archive.download(entry, function (err) {
+      if (err) return cb(err)
+      next(null)
+    })
     debug('entry', entry)
 
     dl.on('ready', function () {
@@ -90,8 +94,9 @@ Dat.prototype.download = function (link, location, cb) {
       debug('done', entry.size)
     })
   })
-  metadata.on('error', cb)
-  metadata.on('end', function () {
+
+  pump(archive.createEntryStream(), downloadEntry, function (err) {
+    if (err) return cb(err)
     cb(null, archive.stats)
   })
 }

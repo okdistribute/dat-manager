@@ -46,6 +46,7 @@ test('manager share', function (t) {
     var db = LocalDat({})
     db.download(data.value.link, tmpDir, function (err, stats) {
       t.ifError(err)
+      t.same(stats.filesRead, 1, 'one file read')
       manager.close(function () {
         db.close()
         t.end()

@@ -83,15 +83,12 @@ Dat.prototype.download = function (link, location, cb) {
     var dl = archive.download(entry, function (err) {
       if (err) return cb(err)
       next(null)
+      debug('done', entry.size)
     })
     debug('entry', entry)
 
     dl.on('ready', function () {
       debug('download started', entry.name, dl)
-    })
-
-    dl.on('end', function () {
-      debug('done', entry.size)
     })
   })
 

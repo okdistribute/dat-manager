@@ -103,12 +103,12 @@ Manager.prototype.start = function (key, opts, cb) {
     if (err) {
       if (!err.notFound) return cb(err)
       dat = {
-        state: 'active',
         link: opts.link,
         date: Date.now(),
         location: location
       }
     }
+    dat.state = 'active'
     if (opts.link) dat.link = opts.link
     self.dat.download(dat.link, dat.location, function (err, stats) {
       if (err) return cb(err)

@@ -79,13 +79,16 @@ Dat.prototype.download = function (link, location, cb) {
   debug('joining', link)
   self.swarm.join(new Buffer(link, 'hex'))
   var archive = self.drive.get(link, location)
+  var stats = {
+    size: 0
+  }
   var downloadEntry = through.obj(function (entry, encoding, next) {
     var dl = archive.download(entry, function (err) {
       if (err) return cb(err)
       next(null)
-      debug('done', entry.size)
     })
     debug('entry', entry)
+    stats.size += entry.size
 
     dl.on('ready', function () {
       debug('download started', entry.name, dl)
@@ -94,7 +97,7 @@ Dat.prototype.download = function (link, location, cb) {
 
   pump(archive.createEntryStream(), downloadEntry, function (err) {
     if (err) return cb(err)
-    cb(null, archive.stats)
+    cb(null, stats)
   })
 }
 

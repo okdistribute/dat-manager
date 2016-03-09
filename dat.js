@@ -101,6 +101,11 @@ Dat.prototype.download = function (link, location, cb) {
   })
 }
 
+Dat.prototype.leave = function (link) {
+  link = link.replace('dat://', '').replace('dat:', '')
+  this.swarm.leave(new Buffer(link, 'hex'))
+}
+
 Dat.prototype.close = function (cb) {
   this.drive.core.db.close()
   this.swarm.destroy(cb)

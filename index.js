@@ -60,7 +60,7 @@ Manager.prototype.stop = function (key, cb) {
     if (err) return cb(err)
     dat.state = 'inactive'
     debug('stopping', dat)
-    self.dat.swarm.leave(dat.link)
+    self.dat.leave(dat.link)
     self.db.put(key, dat, function (err) {
       if (err) return cb(err)
       debug('done', dat)
@@ -127,7 +127,7 @@ Manager.prototype.delete = function (key, cb) {
   debug('deleting', key)
   self.db.get(key, function (err, dat) {
     if (err) return cb(err)
-    self.dat.swarm.leave(dat.link)
+    self.dat.leave(dat.link)
     self.db.del(key, function (err) {
       if (err) return cb(err)
       debug('done')

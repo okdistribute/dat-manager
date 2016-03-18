@@ -137,12 +137,7 @@ Manager.prototype.delete = function (key, cb) {
 }
 
 Manager.prototype.list = function (cb) {
-  var readStream = this.db.createReadStream()
-  var metadata = through.obj(function (data, enc, next) {
-    next(null, data)
-  })
-  var stream = readStream.pipe(metadata)
-  collect(stream, cb)
+  collect(this.db.createReadStream(), cb)
 }
 
 Manager.prototype.close = function (cb) {

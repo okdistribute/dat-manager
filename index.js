@@ -41,7 +41,7 @@ Manager.prototype.rename = function (key, newkey, cb) {
 Manager.prototype.update = function (key, data, cb) {
   var self = this
   if (!key) return cb(new Error('key required'))
-  if (data.key !== key) {
+  if (data.key && (data.key !== key)) {
     self.rename(key, data.key, function (err) {
       if (err) return cb(err)
       self.update(data.key, data, cb)

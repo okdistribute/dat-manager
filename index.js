@@ -98,10 +98,8 @@ Manager.prototype.start = function (key, opts, cb) {
   if (!opts) opts = {}
   if (!key) return cb(new Error('key required'))
   key = key.replace('dat://', '').replace('dat:', '')
-  var validated = key.match(/^[a-zA-Z0-9_ -]*$/)
-  if (!validated) return cb(new Error('key must contain no special characters, got ' + key))
   self.db.get(key, function (err, dat) {
-    var location = opts.location || (dat && dat.location) || path.join(self.location, opts.link.replace('dat://', ''))
+    var location = opts.location || dat && dat.location || path.join(self.location, opts.link.replace('dat://', ''))
     if (err) {
       if (!err.notFound) return cb(err)
       dat = {

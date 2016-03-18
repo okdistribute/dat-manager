@@ -16,9 +16,11 @@ function Manager (opts) {
   this.db = opts.db || createDb(opts)
   this.location = opts.location || path.resolve('dats')
   this.dat = Dat({db: opts.datdb})
-  this.init(function (err) {
-    if (err) throw err
-  })
+  if (opts.start === false) {
+    this.init(function (err) {
+      if (err) throw err
+    })
+  }
 }
 
 Manager.prototype.get = function (key, cb) {

@@ -1,5 +1,4 @@
 var mkdirp = require('mkdirp')
-var through = require('through2')
 var collect = require('collect-stream')
 var extend = require('extend')
 var level = require('level')

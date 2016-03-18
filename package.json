@@ -1,6 +1,6 @@
 {
   "name": "dat-manager",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Manage multiple dat instances on a single machine.",
   "main": "index.js",
   "scripts": {

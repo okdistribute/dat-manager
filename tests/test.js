@@ -8,26 +8,21 @@ var test = require('tape')
 
 var location = path.join(__dirname, 'manager_test')
 
+var manager = Manager({
+  location: location,
+  datdb: memdb(),
+  db: memdb({ valueEncoding: 'json' })
+})
+
 test('basic manager config options', function (t) {
-  var manager = Manager({
-    location: location,
-    datdb: memdb(),
-    db: memdb({ valueEncoding: 'json' })
-  })
   manager.list(function (err, data) {
     t.ifError(err)
     t.equal(data.length, 0, 'no data')
-    manager.close()
     t.end()
   })
 })
 
 test('manager start and stop', function (t) {
-  var manager = Manager({
-    location: location,
-    datdb: memdb(),
-    db: memdb({ valueEncoding: 'json' })
-  })
   var db = Dat()
   db.addFiles(path.join(__dirname, 'fixtures'), function (err, link) {
     t.ifError(err)
@@ -39,18 +34,28 @@ test('manager start and stop', function (t) {
           t.ifError(err)
           t.same(data[0].key, 'mydat')
           t.same(data[0].value.state, 'active')
-          manager.close(function () {
-            db.close()
-            t.end()
-          })
+          db.close()
+          t.end()
         })
       })
     })
   })
 })
 
+test('manager update', function (t) {
+  manager.update('mydat', {key: 'mydat2'}, function (err, dat) {
+    t.ifError(err)
+    manager.get('mydat2', function (err, dat) {
+      t.ifError(err)
+      manager.get('mydat', function (err, dat) {
+        t.ok(err)
+        t.end()
+      })
+    })
+  })
+})
+
 test('manager share', function (t) {
-  var manager = Manager()
   var shareFiles = path.join(__dirname, 'fixtures')
   var tmpDir = os.tmpDir()
   manager.share('manager!share test', shareFiles, function (err, data) {

@@ -83,6 +83,7 @@ Manager.prototype.share = function (key, location, cb) {
       location: location,
       stats: stats
     }
+    if (!key) key = link
     self.db.put(key, dat, function (err) {
       if (err) return cb(err)
       return cb(null, {key: key, value: dat})
@@ -109,6 +110,7 @@ Manager.prototype.start = function (key, opts, cb) {
     }
     dat.state = 'active'
     if (opts.link) dat.link = opts.link
+    debug('downloading', dat.link, dat.location)
     self.dat.download(dat.link, dat.location, function (err, stats) {
       if (err) return cb(err)
       dat.stats = stats

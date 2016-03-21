@@ -3,6 +3,9 @@
   "version": "1.4.4",
   "description": "Manage multiple dat instances on a single machine.",
   "main": "index.js",
+  "bin": {
+    "dat-manager": "cli.js"
+  },
   "scripts": {
     "test": "node tests/test.js"
   },
@@ -17,6 +20,8 @@
   },
   "homepage": "https://github.com/karissa/dat-manager#readme",
   "dependencies": {
+    "auto-daemon": "^2.6.0",
+    "cli-prompt": "^0.5.0",
     "collect-stream": "^1.1.1",
     "debug": "^2.2.0",
     "discovery-swarm": "^3.0.1",
@@ -28,6 +33,7 @@
     "mkdirp": "^0.5.1",
     "os-homedir": "^1.0.1",
     "pump": "^1.0.1",
+    "relative-date": "^1.1.2",
     "run-parallel": "^1.1.4",
     "stream-each": "^1.1.2",
     "through2": "^2.0.1"

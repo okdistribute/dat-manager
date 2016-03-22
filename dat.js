@@ -67,7 +67,7 @@ Dat.prototype.add = function (dirs, cb) {
       if (err) return cb(err)
       var link = archive.id.toString('hex')
       debug('done', link, archive.stats)
-      self.swarm.join(link)
+      self.swarm.join(new Buffer(link, 'hex'))
       cb(null, link, archive.stats)
     })
   })
@@ -77,7 +77,8 @@ Dat.prototype.download = function (link, location, cb) {
   var self = this
   link = link.replace('dat://', '').replace('dat:', '')
   debug('joining', link)
-  self.swarm.join(new Buffer(link, 'hex'))
+  link = new Buffer(link, 'hex')
+  self.swarm.join(link)
   var archive = self.drive.get(link, location)
   var stats = {
     size: 0

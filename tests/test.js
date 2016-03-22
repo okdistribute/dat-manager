@@ -68,8 +68,8 @@ test('manager share', function (t) {
   var tmpDir = os.tmpDir()
   manager.share('manager!share test', shareFiles, function (err, data) {
     t.ifError(err)
-    t.same(data.key, 'manager!share test')
-    t.same(data.value.state, 'active')
+    t.same(data.key, 'manager!share test', 'key is right')
+    t.same(data.value.state, 'active', 'is active')
     var db = LocalDat({})
     db.download(data.value.link, tmpDir, function (err, stats) {
       t.ifError(err)

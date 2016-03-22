@@ -110,11 +110,10 @@ Manager.prototype.start = function (key, opts, cb) {
     if (err) {
       if (!err.notFound) return cb(err)
       dat = {
-        link: opts.link,
-        date: Date.now(),
         location: location
       }
     }
+    dat.date = Date.now()
     dat.state = 'active'
     dat.swarm = true
     if (opts.link) dat.link = opts.link

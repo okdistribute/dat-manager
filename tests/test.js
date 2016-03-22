@@ -34,8 +34,16 @@ test('manager start and stop', function (t) {
           t.ifError(err)
           t.same(data[0].key, 'mydat')
           t.same(data[0].value.state, 'active')
-          db.close()
-          t.end()
+          manager.stop('mydat', function (err) {
+            t.ifError(err)
+            manager.get('mydat', function (err, dat) {
+              t.ifError(err)
+              t.same(dat.value.swarm, false, 'swarm is false')
+              t.same(dat.value.state, 'inactive', 'not active')
+              db.close()
+              t.end()
+            })
+          })
         })
       })
     })
@@ -60,16 +68,18 @@ test('manager share', function (t) {
   var tmpDir = os.tmpDir()
   manager.share('manager!share test', shareFiles, function (err, data) {
     t.ifError(err)
-    t.same(data.key, 'manager!share test')
-    t.same(data.value.state, 'active')
+    t.same(data.key, 'manager!share test', 'key is right')
+    t.same(data.value.state, 'active', 'is active')
     var db = LocalDat({})
     db.download(data.value.link, tmpDir, function (err, stats) {
       t.ifError(err)
       t.same(stats.size, 48023, 'size is 48023')
-      manager.close(function () {
-        db.close()
-        t.end()
-      })
+      db.close()
+      t.end()
     })
   })
+})
+
+test.onFinish(function () {
+  manager.close()
 })

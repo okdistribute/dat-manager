@@ -3,6 +3,8 @@ var collect = require('collect-stream')
 var extend = require('extend')
 var level = require('level')
 var parallel = require('run-parallel')
+var through = require('through2')
+var pump = require('pump')
 var debug = require('debug')('dat-manager')
 var path = require('path')
 var Dat = require('./dat.js')
@@ -59,9 +61,10 @@ Manager.prototype.stop = function (key, cb) {
   if (!key) return cb(new Error('key required'))
   self.db.get(key, function (err, dat) {
     if (err) return cb(err)
-    dat.state = 'inactive'
     debug('stopping', dat)
     self.dat.leave(dat.link)
+    dat.state = 'inactive'
+    dat.swarm = false
     self.db.put(key, dat, function (err) {
       if (err) return cb(err)
       debug('done', dat)
@@ -78,6 +81,7 @@ Manager.prototype.share = function (key, location, cb) {
     debug('stats', stats)
     var dat = {
       state: 'active',
+      swarm: true,
       link: link,
       date: Date.now(),
       location: location,
@@ -109,6 +113,7 @@ Manager.prototype.start = function (key, opts, cb) {
       }
     }
     dat.state = 'active'
+    dat.swarm = true
     if (opts.link) dat.link = opts.link
     debug('downloading', dat.link, dat.location)
     self.dat.download(dat.link, dat.location, function (err, stats) {
@@ -142,8 +147,16 @@ Manager.prototype.list = function (cb) {
 }
 
 Manager.prototype.close = function (cb) {
-  this.db.close()
-  this.dat.close(cb)
+  var self = this
+  var stream = this.db.createReadStream()
+  pump(stream, through.obj(function (data, enc, next) {
+    data.swarm = false
+    next(null, data)
+  }), function (err) {
+    if (err) return cb(err)
+    self.db.close()
+    self.dat.close(cb)
+  })
 }
 
 Manager.prototype.init = function (cb) {
@@ -153,7 +166,7 @@ Manager.prototype.init = function (cb) {
 
   stream.on('data', function (dat) {
     funcs.push(function (done) {
-      if (dat.value.state === 'active') self.start(dat.key, done)
+      if (dat.value.state === 'active' && !dat.value.swarm) self.start(dat.key, done)
       else done()
     })
   })

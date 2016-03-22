@@ -152,8 +152,11 @@ Manager.prototype.close = function (cb) {
   var self = this
   var stream = this.db.createReadStream()
   pump(stream, through.obj(function (data, enc, next) {
-    data.swarm = false
-    next(null, data)
+    data.value.swarm = false
+    self.update(data.key, {swarm: false}, function (err) {
+      if (err) return cb(err)
+      next(null, data)
+    })
   }), function (err) {
     if (err) return cb(err)
     self.db.close()

@@ -26,7 +26,10 @@ function Manager (opts) {
 
 Manager.prototype.get = function (key, cb) {
   if (!key) return cb(new Error('key required'))
-  return this.db.get(key, cb)
+  this.db.get(key, function (err, dat) {
+    if (err) return cb(err)
+    return cb(null, {key: key, value: dat})
+  })
 }
 
 Manager.prototype.rename = function (key, newkey, cb) {

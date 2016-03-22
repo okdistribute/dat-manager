@@ -81,6 +81,5 @@ test('manager share', function (t) {
 })
 
 test.onFinish(function () {
-  console.log('closing')
   manager.close()
 })

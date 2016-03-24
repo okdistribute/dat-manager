@@ -50,12 +50,11 @@ Dat.prototype.add = function (dirs, cb) {
   }})
 
   each(stream, function (data, next) {
+    var prefix = path.resolve(data.filepath) !== path.resolve(data.root)
+    var dirname = path.basename(data.root)
     var item = {
-      name: data.relname,
+      name: prefix ? path.join(dirname, data.relname) : data.relname,
       path: path.resolve(data.filepath),
-      mode: data.stat.mode,
-      uid: data.stat.uid,
-      gid: data.stat.gid,
       mtime: data.stat.mtime.getTime(),
       ctime: data.stat.ctime.getTime(),
       size: data.stat.size

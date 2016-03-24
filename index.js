@@ -26,46 +26,29 @@ function Manager (opts) {
 
 Manager.prototype.get = function (key, cb) {
   if (!key) return cb(new Error('key required'))
+  key = key.replace('dat://', '').replace('dat:', '')
   this.db.get(key, function (err, dat) {
     if (err) return cb(err)
     return cb(null, {key: key, value: dat})
   })
 }
 
-Manager.prototype.rename = function (key, newkey, cb) {
-  var self = this
-  self.db.get(key, function (err, data) {
-    if (err) return cb(err)
-    self.db.put(newkey, data, function (err, data) {
-      if (err) return cb(err)
-      self.db.del(key, data, cb)
-    })
-  })
-}
-
 Manager.prototype.update = function (key, data, cb) {
   var self = this
   if (!key) return cb(new Error('key required'))
-  if (data.key && (data.key !== key)) {
-    self.rename(key, data.key, function (err) {
-      if (err) return cb(err)
-      self.update(data.key, data, cb)
-    })
-  } else {
-    self.db.get(key, function (err, oldData) {
-      if (err) return cb(err)
-      self.db.put(key, extend(oldData, data), cb)
-    })
-  }
+  self.get(key, function (err, oldData) {
+    if (err) return cb(err)
+    self.db.put(key, extend(oldData, data), cb)
+  })
 }
 
 Manager.prototype.stop = function (key, cb) {
   var self = this
   if (!key) return cb(new Error('key required'))
-  self.db.get(key, function (err, dat) {
+  self.get(key, function (err, dat) {
     if (err) return cb(err)
     debug('stopping', dat)
-    self.dat.leave(dat.link)
+    self.dat.leave(dat.value.link)
     dat.state = 'inactive'
     dat.swarm = false
     self.db.put(key, dat, function (err) {
@@ -76,9 +59,9 @@ Manager.prototype.stop = function (key, cb) {
   })
 }
 
-Manager.prototype.share = function (key, location, cb) {
+Manager.prototype.share = function (location, cb) {
   var self = this
-  debug('adding files for', key, 'from', location)
+  debug('adding files for from', location)
   self.dat.add(location, function (err, link, stats) {
     if (err) return cb(err)
     debug('stats', stats)
@@ -90,7 +73,7 @@ Manager.prototype.share = function (key, location, cb) {
       location: location,
       stats: stats
     }
-    if (!key) key = link
+    var key = link
     self.db.put(key, dat, function (err) {
       if (err) return cb(err)
       return cb(null, {key: key, value: dat})
@@ -98,15 +81,14 @@ Manager.prototype.share = function (key, location, cb) {
   })
 }
 
-Manager.prototype.start = function (key, opts, cb) {
+Manager.prototype.start = function (link, opts, cb) {
   var self = this
-  debug('starting', key)
-  if ((typeof opts) === 'function') return self.start(key, {}, opts)
+  debug('starting', link)
+  if ((typeof opts) === 'function') return self.start(link, {}, opts)
   if (!opts) opts = {}
-  if (!key) return cb(new Error('key required'))
-  key = key.replace('dat://', '').replace('dat:', '')
-  self.db.get(key, function (err, dat) {
-    var location = opts.location || dat && dat.location || path.join(self.location, opts.link.replace('dat://', ''))
+  if (!link) return cb(new Error('link required'))
+  self.get(link, function (err, dat) {
+    var location = opts.location || dat && dat.location || path.join(self.location, link.replace('dat://', ''))
     if (err) {
       if (!err.notFound) return cb(err)
       dat = {
@@ -116,15 +98,15 @@ Manager.prototype.start = function (key, opts, cb) {
     dat.date = Date.now()
     dat.state = 'active'
     dat.swarm = true
-    if (opts.link) dat.link = opts.link
+    dat.link = link
     debug('downloading', dat.link, dat.location)
     self.dat.download(dat.link, dat.location, function (err, stats) {
       if (err) return cb(err)
       dat.stats = stats
       debug('updating', dat)
-      self.db.put(key, dat, function (err) {
+      self.db.put(link, dat, function (err) {
         if (err) return cb(err)
-        return cb(null, {key: key, value: dat})
+        return cb(null, {key: link, value: dat})
       })
     })
   })
@@ -133,9 +115,9 @@ Manager.prototype.start = function (key, opts, cb) {
 Manager.prototype.delete = function (key, cb) {
   var self = this
   debug('deleting', key)
-  self.db.get(key, function (err, dat) {
+  self.get(key, function (err, dat) {
     if (err) return cb(err)
-    self.dat.leave(dat.link)
+    self.dat.leave(dat.value.link)
     self.db.del(key, function (err) {
       if (err) return cb(err)
       debug('done')

@@ -28,15 +28,16 @@ test('manager start and stop', function (t) {
     t.ifError(err)
     db.joinTcpSwarm(link, function (err) {
       t.ifError(err)
-      manager.start('mydat', {link: link}, function (err, stats) {
+      manager.start(link, function (err, stats) {
         t.ifError(err)
         manager.list(function (err, data) {
           t.ifError(err)
-          t.same(data[0].key, 'mydat')
+          t.same(data[0].key, link)
+          t.same(data[0].value.link, link)
           t.same(data[0].value.state, 'active')
-          manager.stop('mydat', function (err) {
+          manager.stop(link, function (err) {
             t.ifError(err)
-            manager.get('mydat', function (err, dat) {
+            manager.get(link, function (err, dat) {
               t.ifError(err)
               t.same(dat.value.swarm, false, 'swarm is false')
               t.same(dat.value.state, 'inactive', 'not active')
@@ -50,25 +51,12 @@ test('manager start and stop', function (t) {
   })
 })
 
-test('manager update', function (t) {
-  manager.update('mydat', {key: 'mydat2'}, function (err, dat) {
-    t.ifError(err)
-    manager.get('mydat2', function (err, dat) {
-      t.ifError(err)
-      manager.get('mydat', function (err, dat) {
-        t.ok(err)
-        t.end()
-      })
-    })
-  })
-})
-
 test('manager share', function (t) {
-  var shareFiles = path.join(__dirname, 'fixtures')
+  var dir = path.join(__dirname, 'fixtures')
   var tmpDir = os.tmpDir()
-  manager.share('manager!share test', shareFiles, function (err, data) {
+  manager.share(dir, function (err, data) {
     t.ifError(err)
-    t.same(data.key, 'manager!share test', 'key is right')
+    t.same(data.key, data.value.link, 'key is right')
     t.same(data.value.state, 'active', 'is active')
     var db = LocalDat({})
     db.download(data.value.link, tmpDir, function (err, stats) {

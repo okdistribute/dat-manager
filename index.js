@@ -49,9 +49,9 @@ Manager.prototype.stop = function (key, cb) {
     if (err) return cb(err)
     debug('stopping', dat)
     self.dat.leave(dat.value.link)
-    dat.state = 'inactive'
-    dat.swarm = false
-    self.db.put(key, dat, function (err) {
+    dat.value.state = 'inactive'
+    dat.value.swarm = false
+    self.db.put(key, dat.value, function (err) {
       if (err) return cb(err)
       debug('done', dat)
       cb(null, {key: key, value: dat})
@@ -65,7 +65,7 @@ Manager.prototype.share = function (location, cb) {
   self.dat.add(location, function (err, link, stats) {
     if (err) return cb(err)
     debug('stats', stats)
-    var dat = {
+    var value = {
       state: 'active',
       swarm: true,
       link: link,
@@ -73,10 +73,9 @@ Manager.prototype.share = function (location, cb) {
       location: location,
       stats: stats
     }
-    var key = link
-    self.db.put(key, dat, function (err) {
+    self.db.put(link, value, function (err) {
       if (err) return cb(err)
-      return cb(null, {key: key, value: dat})
+      return cb(null, {key: link, value: value})
     })
   })
 }
@@ -88,23 +87,25 @@ Manager.prototype.start = function (link, opts, cb) {
   if (!opts) opts = {}
   if (!link) return cb(new Error('link required'))
   self.get(link, function (err, dat) {
-    var location = opts.location || dat && dat.location || path.join(self.location, link.replace('dat://', ''))
+    var location = opts.location || dat && dat.value.location || path.join(self.location, link.replace('dat://', ''))
     if (err) {
       if (!err.notFound) return cb(err)
       dat = {
-        location: location
+        value: {
+          location: location
+        }
       }
     }
-    dat.date = Date.now()
-    dat.state = 'active'
-    dat.swarm = true
-    dat.link = link
-    debug('downloading', dat.link, dat.location)
-    self.dat.download(dat.link, dat.location, function (err, stats) {
+    dat.value.date = Date.now()
+    dat.value.state = 'active'
+    dat.value.swarm = true
+    dat.value.link = link
+    debug('downloading', dat.value.link, dat.value.location)
+    self.dat.download(dat.value.link, dat.value.location, function (err, stats) {
       if (err) return cb(err)
       dat.stats = stats
       debug('updating', dat)
-      self.db.put(link, dat, function (err) {
+      self.db.put(link, dat.value, function (err) {
         if (err) return cb(err)
         return cb(null, {key: link, value: dat})
       })

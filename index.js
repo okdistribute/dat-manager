@@ -91,6 +91,7 @@ Manager.prototype.start = function (link, opts, cb) {
     if (err) {
       if (!err.notFound) return cb(err)
       dat = {
+        key: link,
         value: {
           location: location
         }
@@ -103,11 +104,11 @@ Manager.prototype.start = function (link, opts, cb) {
     debug('downloading', dat.value.link, dat.value.location)
     self.dat.download(dat.value.link, dat.value.location, function (err, stats) {
       if (err) return cb(err)
-      dat.stats = stats
+      dat.value.stats = stats
       debug('updating', dat)
       self.db.put(link, dat.value, function (err) {
         if (err) return cb(err)
-        return cb(null, {key: link, value: dat})
+        return cb(null, dat)
       })
     })
   })

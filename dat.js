@@ -89,6 +89,9 @@ Dat.prototype.download = function (link, location, cb) {
     })
     debug('entry', entry)
     stats.size += entry.size
+    var segments = entry.name.split(path.sep)
+    if (segments.length === 1 && entry.type === 'file') stats.parentFolder = false
+    else stats.parentFolder = segments[0]
 
     dl.on('ready', function () {
       debug('download started', entry.name, dl)
